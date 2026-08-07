@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Flame, Ambulance, Droplets, FlaskConical, AlertTriangle, ShieldCheck, Zap, XCircle, CheckCircle2, Sparkles } from "lucide-react";
+import { Flame, Ambulance, Droplets, FlaskConical, AlertTriangle, ShieldCheck, Zap, XCircle, CheckCircle2, Sparkles, Video as VideoIcon } from "lucide-react";
 
 export type TweetItem = {
   id: string;
@@ -14,6 +14,8 @@ export type TweetItem = {
   isDuplicate: boolean;
   status: "New" | "Analyzed" | "Dispatched" | "Ignored";
   isMock?: boolean;
+  mediaUrl?: string;
+  mediaType?: "image" | "video";
 };
 
 const sampleTweets: TweetItem[] = [
@@ -29,6 +31,8 @@ const sampleTweets: TweetItem[] = [
     confidence: 0.94,
     isDuplicate: false,
     status: "New",
+    mediaUrl: "https://images.unsplash.com/photo-1599401736636-f365d9561081?auto=format&fit=crop&w=600&q=80",
+    mediaType: "image",
   },
   {
     id: "tw-2",
@@ -55,6 +59,8 @@ const sampleTweets: TweetItem[] = [
     confidence: 0.96,
     isDuplicate: false,
     status: "New",
+    mediaUrl: "https://images.unsplash.com/photo-1566378246598-5b11a0d486cc?auto=format&fit=crop&w=600&q=80",
+    mediaType: "image",
   },
   {
     id: "tw-4",
@@ -68,6 +74,8 @@ const sampleTweets: TweetItem[] = [
     confidence: 0.82,
     isDuplicate: true,
     status: "Analyzed",
+    mediaUrl: "https://images.unsplash.com/photo-1547683905-f686c993aae5?auto=format&fit=crop&w=600&q=80",
+    mediaType: "image",
   },
   {
     id: "tw-5",
@@ -173,6 +181,17 @@ export function LiveFeedView({ injectedTweets = [] }: { injectedTweets?: TweetIt
 
                 <p className="text-xs font-semibold text-foreground/90 mt-3 leading-relaxed">{t.text}</p>
 
+                {/* Media Attachment Rendering */}
+                {t.mediaUrl && (
+                  <div className="mt-3 rounded-xl overflow-hidden border border-purple-200 dark:border-purple-800/60 max-h-48">
+                    {t.mediaType === "video" ? (
+                      <video src={t.mediaUrl} controls className="w-full max-h-48 object-cover" />
+                    ) : (
+                      <img src={t.mediaUrl} alt="Disaster Media Attachment" className="w-full h-44 object-cover" />
+                    )}
+                  </div>
+                )}
+
                 <div className="mt-3 pt-3 border-t border-purple-100 dark:border-purple-900/50 flex flex-wrap items-center justify-between text-[11px] text-muted-foreground gap-2">
                   <span className="font-bold text-purple-700 dark:text-purple-300">📍 {t.location}</span>
                   <div className="flex items-center gap-3">
@@ -203,6 +222,16 @@ export function LiveFeedView({ injectedTweets = [] }: { injectedTweets?: TweetIt
               <span className="text-muted-foreground font-semibold">Selected Tweet Content</span>
               <p className="font-bold text-foreground">{selectedTweet.text}</p>
             </div>
+
+            {selectedTweet.mediaUrl && (
+              <div className="rounded-xl overflow-hidden border border-purple-200 dark:border-purple-800 max-h-32">
+                {selectedTweet.mediaType === "video" ? (
+                  <video src={selectedTweet.mediaUrl} controls className="w-full max-h-32 object-cover" />
+                ) : (
+                  <img src={selectedTweet.mediaUrl} alt="Selected Media" className="w-full h-28 object-cover" />
+                )}
+              </div>
+            )}
 
             <div className="grid grid-cols-2 gap-3">
               <div className="p-3 rounded-xl bg-card border border-border">

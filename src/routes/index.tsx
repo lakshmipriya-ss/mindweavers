@@ -19,7 +19,6 @@ import {
   MapPin,
   Stethoscope,
   Car,
-  AlertTriangle,
   Sliders,
   Settings,
   Bell,
@@ -88,7 +87,15 @@ function Dashboard() {
     }
   };
 
-  const handleInjectTweetPayload = (payload: { handle: string; text: string; location: string; type: string; severity: number }) => {
+  const handleInjectTweetPayload = (payload: {
+    handle: string;
+    text: string;
+    location: string;
+    type: string;
+    severity: number;
+    mediaUrl?: string;
+    mediaType?: "image" | "video";
+  }) => {
     injectIncident(payload);
     const newMockTweetItem: TweetItem = {
       id: `mock-tw-${Date.now()}`,
@@ -103,6 +110,8 @@ function Dashboard() {
       isDuplicate: false,
       status: "New",
       isMock: true,
+      mediaUrl: payload.mediaUrl,
+      mediaType: payload.mediaType,
     };
     setInjectedMockTweets((prev) => [newMockTweetItem, ...prev]);
     setActiveTab("live-feed");
@@ -191,25 +200,12 @@ function Dashboard() {
             </div>
           </div>
 
-          {/* Header Actions: Clock, Status, Emergency Level, Notifications, Theme, Mock Generator & Profile */}
+          {/* Clean Header Actions: Live Clock, Notifications, Theme Toggle & Profile */}
           <div className="flex flex-wrap items-center gap-3 text-xs font-semibold">
             {/* Live HH:mm:ss Clock */}
             <div className="px-3 py-1.5 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 font-mono font-extrabold text-purple-700 dark:text-purple-300">
               {timeStr}
             </div>
-
-            {/* Emergency Level Indicator */}
-            <span className="px-3 py-1.5 rounded-xl bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 font-extrabold border border-rose-200 flex items-center gap-1">
-              <AlertTriangle className="size-3.5 text-rose-600" /> LEVEL 2 EMERGENCY
-            </span>
-
-            {/* Mock Disaster Generator Trigger Button for Judges */}
-            <button
-              onClick={() => setIsMockSidebarOpen(true)}
-              className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-extrabold shadow-md hover:brightness-110 active:scale-95 transition-all flex items-center gap-1.5 border border-purple-300/40"
-            >
-              <Sparkles className="size-3.5 text-yellow-300 animate-spin" /> 📝 Mock Disaster Generator
-            </button>
 
             {/* Notifications Bell */}
             <button
@@ -278,7 +274,22 @@ function Dashboard() {
         </div>
       </main>
 
-      {/* Mock Disaster Tweet Generator Sidebar Drawer */}
+      {/* Floating Right-Bottom Corner Trigger Button for Mock Disaster Generator */}
+      {!isMockSidebarOpen && (
+        <button
+          onClick={() => setIsMockSidebarOpen(true)}
+          className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4.5 py-3 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-extrabold text-xs shadow-2xl hover:scale-105 active:scale-95 transition-all border border-purple-300/40 group"
+        >
+          <span className="relative flex size-3">
+            <span className="pulse-ring absolute inset-0 rounded-full bg-white" />
+            <span className="relative size-3 rounded-full bg-white" />
+          </span>
+          <Sparkles className="size-4 text-yellow-300 group-hover:rotate-12 transition-transform" />
+          <span>📝 Mock Disaster Generator</span>
+        </button>
+      )}
+
+      {/* Mock Disaster Tweet Generator Right Corner Sidebar Drawer */}
       <MockTweetGeneratorSidebar
         isOpen={isMockSidebarOpen}
         onClose={() => setIsMockSidebarOpen(false)}

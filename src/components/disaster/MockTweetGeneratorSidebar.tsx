@@ -16,17 +16,15 @@ import {
   RotateCcw,
   Sparkles,
   MapPin,
-  Plus,
-  Minus,
   Upload,
-  Play,
-  Pause,
   Send,
   Bot,
   ListFilter,
   CheckCircle2,
-  ArrowRight,
-  ExternalLink,
+  Image as ImageIcon,
+  Video as VideoIcon,
+  Play,
+  Trash2,
 } from "lucide-react";
 
 type DisasterType =
@@ -75,10 +73,28 @@ const commonLocations = [
   "Green Valley Apartment Complex",
 ];
 
+const sampleMediaPresets = [
+  {
+    type: "image",
+    label: "🔥 Fire Scene Photo",
+    url: "https://images.unsplash.com/photo-1599401736636-f365d9561081?auto=format&fit=crop&w=600&q=80",
+  },
+  {
+    type: "image",
+    label: "🌊 Urban Flood Photo",
+    url: "https://images.unsplash.com/photo-1547683905-f686c993aae5?auto=format&fit=crop&w=600&q=80",
+  },
+  {
+    type: "image",
+    label: "💥 Explosion Scene Photo",
+    url: "https://images.unsplash.com/photo-1566378246598-5b11a0d486cc?auto=format&fit=crop&w=600&q=80",
+  },
+];
+
 const scenarioTemplates = [
-  { name: "Factory Fire", type: "Fire" as DisasterType, location: "Industrial Sector 4 Factory", severity: 9, tone: "Panic" },
-  { name: "Urban Flood", type: "Urban Flood" as DisasterType, location: "Market Road Suburb", severity: 7, tone: "Witness" },
-  { name: "Train Accident", type: "Train Derailment" as DisasterType, location: "Vijayawada Railway Station", severity: 10, tone: "News Reporter" },
+  { name: "Factory Fire", type: "Fire" as DisasterType, location: "Industrial Sector 4 Factory", severity: 9, tone: "Panic", mediaUrl: sampleMediaPresets[0].url },
+  { name: "Urban Flood", type: "Urban Flood" as DisasterType, location: "Market Road Suburb", severity: 7, tone: "Witness", mediaUrl: sampleMediaPresets[1].url },
+  { name: "Train Accident", type: "Train Derailment" as DisasterType, location: "Vijayawada Railway Station", severity: 10, tone: "News Reporter", mediaUrl: sampleMediaPresets[2].url },
   { name: "Building Collapse", type: "Building Collapse" as DisasterType, location: "Green Valley Apartment Complex", severity: 8, tone: "Witness" },
   { name: "Gas Leak", type: "Gas Leak" as DisasterType, location: "St. Jude Public School", severity: 8, tone: "Panic" },
   { name: "Airport Emergency", type: "Airport Emergency" as DisasterType, location: "Central Airport Terminal 2", severity: 9, tone: "Police" },
@@ -95,6 +111,8 @@ type ChatItem = {
     location: string;
     type: string;
     severity: number;
+    mediaUrl?: string;
+    mediaType?: "image" | "video";
   };
 };
 
@@ -106,23 +124,17 @@ export function MockTweetGeneratorSidebar({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  onInjectTweet: (tweet: { handle: string; text: string; location: string; type: string; severity: number }) => void;
+  onInjectTweet: (tweet: { handle: string; text: string; location: string; type: string; severity: number; mediaUrl?: string; mediaType?: "image" | "video" }) => void;
   onSwitchToLiveFeed: () => void;
 }) {
   const [activeTab, setActiveTab] = useState<"chatbot" | "wizard">("chatbot");
   const [disasterType, setDisasterType] = useState<DisasterType>("Fire");
   const [severity, setSeverity] = useState(8);
   const [location, setLocation] = useState("Vijayawada Railway Station");
-  const [adults, setAdults] = useState(5);
-  const [children, setChildren] = useState(2);
-  const [critical, setCritical] = useState(1);
-  const [traffic, setTraffic] = useState("Road Blocked");
-  const [weather, setWeather] = useState("Rain");
   const [tone, setTone] = useState("Panic");
+  const [uploadedMediaUrl, setUploadedMediaUrl] = useState<string | null>(sampleMediaPresets[0].url);
+  const [uploadedMediaType, setUploadedMediaType] = useState<"image" | "video">("image");
   const [fakeNews, setFakeNews] = useState(false);
-  const [duplicateMode, setDuplicateMode] = useState(false);
-  const [autoFeed, setAutoFeed] = useState(false);
-  const [intervalSec, setIntervalSec] = useState(3);
 
   // Chatbot State
   const [chatInput, setChatInput] = useState("");
@@ -130,15 +142,29 @@ export function MockTweetGeneratorSidebar({
     {
       id: "bot-1",
       sender: "bot",
-      text: "Hello Judge/Commander! I am your Mock Disaster Generator Bot. Describe any disaster scenario (e.g. 'Generate a severe train accident near Railway Station with heavy casualties') or pick options from the wizard tab below.",
+      text: "Hello Commander! I am your Mock Disaster Generator Bot. Describe any emergency or pick preset scenarios below. You can also upload disaster images and videos!",
       time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     },
   ]);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatHistory]);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const isVid = file.type.startsWith("video");
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setUploadedMediaUrl(event.target?.result as string);
+      setUploadedMediaType(isVid ? "video" : "image");
+    };
+    reader.readAsDataURL(file);
+  };
 
   const generateTweetFromWizard = () => {
     let prefix = "🚨 EMERGENCY REPORT: ";
@@ -146,9 +172,9 @@ export function MockTweetGeneratorSidebar({
 
     let text = `${prefix}`;
     if (tone === "Panic") {
-      text += `HELP! Severe ${disasterType.toLowerCase()} at ${location}! Smoke spreading fast, ${adults + children} people injured. Send emergency crews now! #Emergency #${disasterType.replace(/\s+/g, "")}`;
+      text += `HELP! Severe ${disasterType.toLowerCase()} at ${location}! Smoke spreading fast. Send emergency crews now! #Emergency #${disasterType.replace(/\s+/g, "")}`;
     } else if (tone === "News Reporter") {
-      text += `BREAKING: ${disasterType} reported at ${location}. Traffic is ${traffic}. Multiple emergency response units requested. #${disasterType.replace(/\s+/g, "")} #DisasterFlow`;
+      text += `BREAKING: ${disasterType} reported at ${location}. Multiple emergency response units requested. #${disasterType.replace(/\s+/g, "")} #DisasterFlow`;
     } else {
       text += `${disasterType} ongoing at ${location}. Severity: ${severity}/10. Priority dispatch initiated. #Emergency`;
     }
@@ -163,6 +189,8 @@ export function MockTweetGeneratorSidebar({
       location,
       type: disasterType,
       severity,
+      mediaUrl: uploadedMediaUrl || undefined,
+      mediaType: uploadedMediaUrl ? uploadedMediaType : undefined,
     };
     onInjectTweet(tweetPayload);
     onSwitchToLiveFeed();
@@ -182,7 +210,6 @@ export function MockTweetGeneratorSidebar({
     setChatHistory((prev) => [...prev, userMsg]);
     if (!customQuery) setChatInput("");
 
-    // Simulate Bot Tweet Generation
     setTimeout(() => {
       let inferredType: DisasterType = "Fire";
       const qLower = query.toLowerCase();
@@ -190,10 +217,8 @@ export function MockTweetGeneratorSidebar({
       else if (qLower.includes("train")) inferredType = "Train Derailment";
       else if (qLower.includes("explosion") || qLower.includes("blast")) inferredType = "Explosion";
       else if (qLower.includes("gas") || qLower.includes("leak")) inferredType = "Gas Leak";
-      else if (qLower.includes("collapse")) inferredType = "Building Collapse";
-      else if (qLower.includes("airport")) inferredType = "Airport Emergency";
 
-      const generatedText = `🚨 MOCK DISASTER TWEET: "${query}" - Massive emergency reported near Vijayawada Junction. Urgent fire, medical & police dispatch requested! #Emergency #${inferredType.replace(/\s+/g, "")}`;
+      const generatedText = `🚨 MOCK DISASTER TWEET: "${query}" - Emergency reported near Vijayawada Junction. Urgent dispatch requested! #Emergency #${inferredType.replace(/\s+/g, "")}`;
 
       const generatedTweetObj = {
         handle: "@judge_scenario_test",
@@ -201,12 +226,14 @@ export function MockTweetGeneratorSidebar({
         location: "Vijayawada Junction",
         type: inferredType,
         severity: 9,
+        mediaUrl: uploadedMediaUrl || sampleMediaPresets[0].url,
+        mediaType: uploadedMediaType,
       };
 
       const botMsg: ChatItem = {
         id: `bot-${Date.now()}`,
         sender: "bot",
-        text: `Generated Tweet for Scenario: "${query}". Click below to inject directly into the Live Feed!`,
+        text: `Generated Tweet for Scenario: "${query}". Click below to inject directly into the Live Feed with attached media!`,
         time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         generatedTweet: generatedTweetObj,
       };
@@ -220,13 +247,17 @@ export function MockTweetGeneratorSidebar({
     setLocation(t.location);
     setSeverity(t.severity);
     setTone(t.tone);
+    if (t.mediaUrl) {
+      setUploadedMediaUrl(t.mediaUrl);
+      setUploadedMediaType("image");
+    }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-y-0 right-0 z-50 w-full sm:w-[480px] bg-card/95 backdrop-blur-2xl border-l border-purple-300 dark:border-purple-900 shadow-2xl flex flex-col font-sans rise-in">
-      {/* Sidebar Header */}
+    <div className="fixed inset-y-0 right-0 z-50 w-full sm:w-[460px] bg-card/95 backdrop-blur-2xl border-l border-purple-300 dark:border-purple-900 shadow-2xl flex flex-col font-sans rise-in">
+      {/* Docked Sidebar Header */}
       <div className="p-4 border-b border-purple-100 dark:border-purple-900 bg-gradient-to-r from-purple-700 to-indigo-800 text-white flex items-center justify-between shrink-0 shadow-md">
         <div className="flex items-center gap-2.5">
           <div className="p-2 rounded-xl bg-white/20 backdrop-blur-md">
@@ -234,15 +265,15 @@ export function MockTweetGeneratorSidebar({
           </div>
           <div>
             <h2 className="text-base font-extrabold flex items-center gap-2 leading-none">
-              📝 Mock Tweet Generator Sidebar
+              📝 Mock Disaster Generator
             </h2>
-            <p className="text-xs text-purple-200 mt-0.5">Judge Scenario Chatbot &amp; Live Feed Injector</p>
+            <p className="text-xs text-purple-200 mt-0.5">Judge Scenario Chatbot &amp; Media Injector</p>
           </div>
         </div>
         <button
           onClick={onClose}
           className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
-          title="Collapse Sidebar"
+          title="Close Sidebar"
         >
           <X className="size-5" />
         </button>
@@ -302,6 +333,21 @@ export function MockTweetGeneratorSidebar({
                   {m.generatedTweet && (
                     <div className="mt-3 p-3 rounded-xl bg-card border border-purple-200 dark:border-purple-800 text-xs space-y-2">
                       <p className="font-extrabold text-purple-700 dark:text-purple-300">{m.generatedTweet.text}</p>
+                      
+                      {/* Attached Media Thumbnail Preview */}
+                      {m.generatedTweet.mediaUrl && (
+                        <div className="relative rounded-lg overflow-hidden border border-purple-200 dark:border-purple-800 max-h-36">
+                          {m.generatedTweet.mediaType === "video" ? (
+                            <div className="relative bg-slate-900 flex items-center justify-center p-4 text-white">
+                              <VideoIcon className="size-8 text-purple-400 animate-pulse" />
+                              <span className="text-[10px] ml-2 font-bold">Video Attached</span>
+                            </div>
+                          ) : (
+                            <img src={m.generatedTweet.mediaUrl} alt="Disaster Preview" className="w-full h-28 object-cover" />
+                          )}
+                        </div>
+                      )}
+
                       <button
                         onClick={() => {
                           onInjectTweet(m.generatedTweet!);
@@ -356,7 +402,7 @@ export function MockTweetGeneratorSidebar({
       {/* TAB 2: Option Selector Wizard */}
       {activeTab === "wizard" && (
         <div className="flex-1 overflow-y-auto p-5 space-y-5 text-xs font-semibold">
-          {/* Quick Scenario Templates */}
+          {/* Preset Scenario Cards */}
           <div>
             <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-2">
               One-Click Presets
@@ -375,20 +421,36 @@ export function MockTweetGeneratorSidebar({
             </div>
           </div>
 
-          {/* Disaster Type */}
-          <div>
-            <label className="text-xs font-bold text-foreground">Disaster Type</label>
-            <select
-              value={disasterType}
-              onChange={(e) => setDisasterType(e.target.value as DisasterType)}
-              className="w-full p-2.5 mt-1 rounded-xl border border-purple-200 dark:border-purple-800 bg-background text-xs font-bold"
-            >
-              {Object.keys(disasterIcons).map((type) => (
-                <option key={type} value={type}>
-                  {type}
-                </option>
-              ))}
-            </select>
+          {/* Disaster Type & Location */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-bold text-foreground">Disaster Type</label>
+              <select
+                value={disasterType}
+                onChange={(e) => setDisasterType(e.target.value as DisasterType)}
+                className="w-full p-2.5 mt-1 rounded-xl border border-purple-200 dark:border-purple-800 bg-background text-xs font-bold"
+              >
+                {Object.keys(disasterIcons).map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-bold text-foreground">Location</label>
+              <select
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                className="w-full p-2.5 mt-1 rounded-xl border border-purple-200 dark:border-purple-800 bg-background text-xs font-semibold"
+              >
+                {commonLocations.map((loc) => (
+                  <option key={loc} value={loc}>
+                    {loc}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* Severity Slider */}
@@ -409,35 +471,51 @@ export function MockTweetGeneratorSidebar({
             />
           </div>
 
-          {/* Location & Tone */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-bold text-foreground">Location</label>
-              <select
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                className="w-full p-2.5 mt-1 rounded-xl border border-purple-200 dark:border-purple-800 bg-background text-xs font-semibold"
-              >
-                {commonLocations.map((loc) => (
-                  <option key={loc} value={loc}>
-                    {loc}
-                  </option>
-                ))}
-              </select>
+          {/* Image & Video Upload Dropzone */}
+          <div className="p-3.5 rounded-2xl bg-purple-50/40 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="font-bold flex items-center gap-1.5">
+                <Upload className="size-4 text-purple-600" /> Upload Image / Video
+              </span>
+              {uploadedMediaUrl && (
+                <button
+                  onClick={() => setUploadedMediaUrl(null)}
+                  className="text-rose-600 text-[10px] font-bold flex items-center gap-0.5 hover:underline"
+                >
+                  <Trash2 className="size-3" /> Remove
+                </button>
+              )}
             </div>
-            <div>
-              <label className="text-xs font-bold text-foreground">Tone</label>
-              <select
-                value={tone}
-                onChange={(e) => setTone(e.target.value)}
-                className="w-full p-2.5 mt-1 rounded-xl border border-purple-200 dark:border-purple-800 bg-background text-xs font-semibold"
+
+            {/* Hidden File Input */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="image/*,video/*"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+
+            {/* Preset Samples or Uploaded Preview */}
+            <div className="flex gap-2 items-center">
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="flex-1 p-2.5 rounded-xl border border-dashed border-purple-300 dark:border-purple-700 bg-card hover:bg-purple-100 dark:hover:bg-purple-900/40 text-purple-700 dark:text-purple-300 text-xs font-bold flex items-center justify-center gap-1.5"
               >
-                <option value="Panic">Panic</option>
-                <option value="Witness">Witness</option>
-                <option value="News Reporter">News Reporter</option>
-                <option value="Police">Police</option>
-              </select>
+                <ImageIcon className="size-4" /> Browse Local File
+              </button>
             </div>
+
+            {/* Media Thumbnail Preview */}
+            {uploadedMediaUrl && (
+              <div className="relative rounded-xl overflow-hidden border border-purple-200 dark:border-purple-800 max-h-32 mt-2">
+                {uploadedMediaType === "video" ? (
+                  <video src={uploadedMediaUrl} controls className="w-full max-h-32 object-cover" />
+                ) : (
+                  <img src={uploadedMediaUrl} alt="Disaster Preview" className="w-full h-28 object-cover" />
+                )}
+              </div>
+            )}
           </div>
 
           {/* Generated Preview */}
