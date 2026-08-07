@@ -9,8 +9,11 @@ Return strictly valid JSON with this structure:
 {
     "incident_type": "Fire | Medical | Flood | Earthquake | Hazmat | Traffic | Violence",
     "severity": "Low | Moderate | Severe | Critical",
-    "location": "Extract city/neighborhood or 'Unknown'",
-    "strategic_priority": "Clear 1-sentence tactical instruction for emergency units"
+    "location": "Extract precise city, district, or neighborhood (e.g. 'Andheri Market, Mumbai')",
+    "strategic_priority": "Clear 1-sentence tactical instruction for emergency units",
+    "latitude": "Approximate latitude coordinate (float) based on the location. e.g. 13.0827 for Chennai",
+    "longitude": "Approximate longitude coordinate (float) based on the location. e.g. 80.2707 for Chennai",
+    "flowchart_mermaid": "Valid Mermaid.js graph TD code showing the incident response workflow. It MUST show the Commander informing the Police Agent, the Hospital Agent (who calls the ambulance), and the Traffic Predicting Engine. Do not use Markdown formatting inside the string, just raw text."
 }
 """
 

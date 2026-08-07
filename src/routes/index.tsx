@@ -11,6 +11,7 @@ import { TrafficIntelligenceView } from "@/components/disaster/TrafficIntelligen
 import { SimulationControlsView } from "@/components/disaster/SimulationControlsView";
 import { SettingsView } from "@/components/disaster/SettingsView";
 import { MockTweetGeneratorSidebar } from "@/components/disaster/MockTweetGeneratorSidebar";
+import KineticGrid from "@/components/disaster/KineticGrid";
 import {
   ShieldAlert,
   LayoutDashboard,
@@ -129,9 +130,12 @@ function Dashboard() {
   ];
 
   return (
-    <div className={`min-h-screen bg-background flex flex-row font-sans overflow-x-hidden ${isDark ? "dark" : ""}`}>
+    <div className={`min-h-screen bg-background/50 flex flex-row font-sans overflow-x-hidden relative ${isDark ? "dark" : ""}`}>
+      <div className="fixed inset-0 z-[-1] opacity-50 dark:opacity-30 pointer-events-none">
+        <KineticGrid />
+      </div>
       {/* Icon-Only Light Purple Navigation Sidebar Rail */}
-      <aside className="w-16 md:w-20 sticky top-0 h-screen nav-rail-purple py-6 flex flex-col items-center justify-between shrink-0 z-40 transition-all">
+      <aside className="w-16 md:w-20 sticky top-0 h-screen bg-gradient-to-b from-purple-950/50 via-background/60 to-indigo-950/50 backdrop-blur-xl border-r border-purple-500/20 py-6 flex flex-col items-center justify-between shrink-0 z-40 transition-all shadow-[5px_0_30px_rgba(168,85,247,0.05)]">
         <div className="flex flex-col items-center gap-6">
           {/* Brand Shield Logo */}
           <div className="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-700 text-white shadow-lg shadow-purple-500/35 animate-float cursor-pointer" onClick={() => setActiveTab("dashboard")}>
@@ -180,21 +184,21 @@ function Dashboard() {
       {/* Main Right Content Workspace */}
       <main className="flex-1 p-4 lg:p-6 overflow-y-auto max-w-[1700px] mx-auto min-w-0">
         {/* Global Header */}
-        <header className="flashcard mb-6 p-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-card/90 backdrop-blur-md border border-purple-200/70 shadow-sm rise-in">
+        <header className="flashcard mb-6 p-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-gradient-to-r from-purple-950/40 via-background/80 to-indigo-950/20 backdrop-blur-xl border border-purple-500/20 shadow-lg shadow-purple-900/10 rise-in">
           <div className="flex items-center gap-3.5">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-purple-600 text-white shadow-md">
+            <div className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-fuchsia-500 to-purple-600 text-white shadow-[0_0_15px_rgba(168,85,247,0.5)]">
               <ShieldAlert className="size-5" />
             </div>
             <div>
               <div className="flex items-center gap-2.5">
-                <h1 className="text-xl font-extrabold tracking-tight text-foreground">
-                  DisasterFlow — Mindweavers AI Command
+                <h1 className="text-xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-purple-200 to-indigo-200">
+                  DisasterFlow – Mindweavers AI Command
                 </h1>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-100 dark:bg-purple-900/60 px-3 py-0.5 text-xs font-extrabold text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 shadow-xs animate-pulse-subtle">
-                  <Radio className="size-3 text-purple-600 animate-pulse" /> Neural Multi-Agent Active
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-purple-600/20 to-indigo-600/20 px-3 py-0.5 text-xs font-extrabold text-purple-300 border border-purple-500/30 shadow-[0_0_10px_rgba(168,85,247,0.2)] animate-pulse-subtle">
+                  <Radio className="size-3 text-purple-400 animate-pulse" /> Neural Multi-Agent Active
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p className="text-xs text-purple-200/60 mt-0.5">
                 Autonomous Emergency Operations Command Center
               </p>
             </div>
@@ -203,7 +207,7 @@ function Dashboard() {
           {/* Clean Header Actions: Live Clock, Notifications, Theme Toggle & Profile */}
           <div className="flex flex-wrap items-center gap-3 text-xs font-semibold">
             {/* Live HH:mm:ss Clock */}
-            <div className="px-3 py-1.5 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 font-mono font-extrabold text-purple-700 dark:text-purple-300">
+            <div className="px-3 py-1.5 rounded-xl bg-gradient-to-br from-slate-900/80 to-slate-800/80 border border-slate-700/50 shadow-inner font-mono font-extrabold text-emerald-400 tracking-wider">
               {timeStr}
             </div>
 
@@ -278,7 +282,7 @@ function Dashboard() {
       {!isMockSidebarOpen && (
         <button
           onClick={() => setIsMockSidebarOpen(true)}
-          className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4.5 py-3 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-extrabold text-xs shadow-2xl hover:scale-105 active:scale-95 transition-all border border-purple-300/40 group"
+          className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4.5 py-3 rounded-full bg-gradient-to-r from-fuchsia-600 via-purple-600 to-indigo-600 text-white font-extrabold text-xs shadow-[0_0_20px_rgba(168,85,247,0.4)] hover:shadow-[0_0_30px_rgba(168,85,247,0.6)] hover:scale-105 active:scale-95 transition-all border border-purple-300/40 group"
         >
           <span className="relative flex size-3">
             <span className="pulse-ring absolute inset-0 rounded-full bg-white" />

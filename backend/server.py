@@ -32,9 +32,12 @@ class SimulationResponse(BaseModel):
     incident_type: str
     severity: str
     location: str
+    latitude: Optional[float] = 0.0
+    longitude: Optional[float] = 0.0
     strategic_priority: str = "Standard response"
     department_responses: Optional[dict] = {}
     historical_lessons: Optional[str] = ""
+    flowchart_mermaid: Optional[str] = ""
 
 @app.get("/")
 def read_root():

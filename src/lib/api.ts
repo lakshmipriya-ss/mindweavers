@@ -5,6 +5,9 @@ export interface BackendIncidentResult {
   strategic_priority: string;
   department_responses?: Record<string, any>;
   historical_lessons?: string;
+  flowchart_mermaid?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 const DEFAULT_API_BASE = "http://localhost:8000";
@@ -27,7 +30,7 @@ export async function processIncidentWithBackend(
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: Date.now().toString(), text: tweetText }),
-      signal: AbortSignal.timeout(5000),
+      signal: AbortSignal.timeout(600000),
     });
     if (!res.ok) return null;
     return await res.json();

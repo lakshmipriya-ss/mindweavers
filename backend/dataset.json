@@ -1,0 +1,50 @@
+[
+  {
+    "id": "t_001",
+    "timestamp": "2026-08-07T14:01:00Z",
+    "text": "Just saw a minor fender bender at the intersection of 3rd and Elm. Traffic is backing up a bit but no one looks hurt.",
+    "expected_type": "Police",
+    "expected_severity": "Low",
+    "location": "3rd and Elm"
+  },
+  {
+    "id": "t_002",
+    "timestamp": "2026-08-07T14:05:00Z",
+    "text": "Omg there is a huge structure fire at the old warehouse down in the Industrial District! Flames are massive! #Fire #Emergency",
+    "expected_type": "Fire",
+    "expected_severity": "High",
+    "location": "Industrial District"
+  },
+  {
+    "id": "t_003",
+    "timestamp": "2026-08-07T14:12:00Z",
+    "text": "Someone just collapsed at Central Station, I think it's a heart attack! Someone called 911 but they need an ambulance ASAP!",
+    "expected_type": "Medical",
+    "expected_severity": "High",
+    "location": "Central Station"
+  },
+  {
+    "id": "t_004",
+    "timestamp": "2026-08-07T14:20:00Z",
+    "text": "Massive pileup on Highway 9! Cars are on fire and people are trapped inside! We need fire, medics, everyone! It's a disaster!",
+    "expected_type": "Multi-Agency",
+    "expected_severity": "Critical",
+    "location": "Highway 9"
+  },
+  {
+    "id": "t_005",
+    "timestamp": "2026-08-07T14:35:00Z",
+    "text": "I smell a really strong chemical odor near the Water Treatment Plant, and my eyes are burning. People are starting to panic.",
+    "expected_type": "Multi-Agency",
+    "expected_severity": "High",
+    "location": "Water Treatment Plant"
+  },
+  {
+    "id": "t_006",
+    "timestamp": "2026-08-07T14:40:00Z",
+    "text": "A water main just burst on 5th Avenue and the whole street is flooding! Cars are getting stuck.",
+    "expected_type": "Public Works",
+    "expected_severity": "Medium",
+    "location": "5th Avenue"
+  }
+]

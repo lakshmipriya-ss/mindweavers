@@ -1,0 +1,38 @@
+{
+  "name": "Workflow 2: Incident Resolved Report",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "incident-resolved",
+        "options": {}
+      },
+      "name": "Webhook (From FastAPI)",
+      "type": "n8n-nodes-base.webhook",
+      "position": [ 100, 300 ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const incident = $input.item.json.body;\nconst report = `Incident ${incident.id} resolved. Casualties: ${incident.casualties}. Handled by: ${incident.departments}`;\nreturn [{ json: { report: report, status: 'Stored in Database' } }];"
+      },
+      "name": "Generate Report",
+      "type": "n8n-nodes-base.code",
+      "position": [ 300, 300 ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://api:8000/dashboard/notifications",
+        "sendBody": true,
+        "bodyParameters": { "parameters": [ { "name": "message", "value": "={{ $json.report }}" } ] }
+      },
+      "name": "Notify Dashboard WebSocket",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [ 500, 300 ]
+    }
+  ],
+  "connections": {
+    "Webhook (From FastAPI)": { "main": [ [ { "node": "Generate Report", "type": "main", "index": 0 } ] ] },
+    "Generate Report": { "main": [ [ { "node": "Notify Dashboard WebSocket", "type": "main", "index": 0 } ] ] }
+  }
+}
