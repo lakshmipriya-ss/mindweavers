@@ -1,0 +1,92 @@
+{
+  "name": "Disaster Simulator Data Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds",
+              "secondsInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "e4b6d4b5-683a-4467-86f0-5a3d7b2a5c3e",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        220,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Simulate reading from a live Twitter feed\nconst tweets = [\n  \"Huge flames seen at the Downtown warehouse! Looks like a 3-alarm fire. #fire #emergency\",\n  \"Terrible multi-car crash at Route 66. At least 3 people look badly injured. Send ambulances! #accident\",\n  \"Someone collapsed on the sidewalk in North Hills, they aren't breathing! Need a medic ASAP.\",\n  \"Just got the best coffee in Southside. What a beautiful day!\",\n  \"Brush fire spreading fast near Industrial District due to the high winds. @FireDept\",\n  \"Traffic is terrible around Main Street today. Ugh.\",\n  \"Building collapse in Westside due to the fire. Paramedics and Firefighters needed immediately.\"\n];\n\nconst randomTweet = tweets[Math.floor(Math.random() * tweets.length)];\n\nreturn [\n  {\n    json: {\n      tweet_text: randomTweet,\n      timestamp: new Date().toISOString(),\n      source: \"Mock Twitter Feed\"\n    }\n  }\n];"
+      },
+      "id": "c1f7a3b2-1111-4567-89ab-123456789abc",
+      "name": "Simulate Live Tweet",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/webhook/n8n",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "payload",
+              "value": "={{ $json }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f5a9c8b7-2222-4321-bcfd-9876543210ab",
+      "name": "Send to FastAPI / CrewAI",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        660,
+        240
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Simulate Live Tweet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simulate Live Tweet": {
+      "main": [
+        [
+          {
+            "node": "Send to FastAPI / CrewAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f7d3a2b1-1234-5678-abcd-1234567890ab"
+}

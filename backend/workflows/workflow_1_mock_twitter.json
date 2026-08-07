@@ -1,0 +1,34 @@
+{
+  "name": "Workflow 1: Mock Twitter to FastAPI",
+  "nodes": [
+    {
+      "parameters": { "rule": { "interval": [ { "field": "seconds", "secondsInterval": 30 } ] } },
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [ 100, 300 ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const tweets = ['Massive fire at Downtown mall!', 'Car crash on I-5, multiple injuries.', 'Riot forming near city hall.'];\nreturn [{ json: { text: tweets[Math.floor(Math.random() * tweets.length)], source: 'Twitter' } }];"
+      },
+      "name": "Generate Tweet",
+      "type": "n8n-nodes-base.code",
+      "position": [ 300, 300 ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://api:8000/simulation/mock-twitter",
+        "sendBody": true,
+        "bodyParameters": { "parameters": [ { "name": "payload", "value": "={{ $json }}" } ] }
+      },
+      "name": "Send to FastAPI",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [ 500, 300 ]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": { "main": [ [ { "node": "Generate Tweet", "type": "main", "index": 0 } ] ] },
+    "Generate Tweet": { "main": [ [ { "node": "Send to FastAPI", "type": "main", "index": 0 } ] ] }
+  }
+}

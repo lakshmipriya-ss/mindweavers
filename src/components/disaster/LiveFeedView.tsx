@@ -187,8 +187,10 @@ export function LiveFeedView({ injectedTweets = [] }: { injectedTweets?: TweetIt
                   <div className="mt-3 rounded-xl overflow-hidden border border-purple-200 dark:border-purple-800/60 max-h-48">
                     {t.mediaType === "video" ? (
                       <video src={t.mediaUrl} controls className="w-full max-h-48 object-cover" />
-                    ) : (
+                    ) : t.mediaUrl ? (
                       <img src={t.mediaUrl} alt="Disaster Media Attachment" className="w-full h-44 object-cover" />
+                    ) : (
+                      <img src="https://placehold.co/600x400/gray/white?text=No+Media+Available" alt="Placeholder" className="w-full h-44 object-cover opacity-50" />
                     )}
                   </div>
                 )}

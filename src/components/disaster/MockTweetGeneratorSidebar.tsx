@@ -73,17 +73,17 @@ const sampleMediaPresets = [
   {
     type: "image",
     label: "🔥 Fire Scene Photo",
-    url: "https://images.unsplash.com/photo-1599401736636-f365d9561081?auto=format&fit=crop&w=600&q=80",
+    url: "https://placehold.co/600x400/orange/white?text=Fire+Incident+Media",
   },
   {
     type: "image",
     label: "🌊 Urban Flood Photo",
-    url: "https://images.unsplash.com/photo-1547683905-f686c993aae5?auto=format&fit=crop&w=600&q=80",
+    url: "https://placehold.co/600x400/blue/white?text=Flood+Incident+Media",
   },
   {
     type: "image",
     label: "💥 Explosion Scene Photo",
-    url: "https://images.unsplash.com/photo-1566378246598-5b11a0d486cc?auto=format&fit=crop&w=600&q=80",
+    url: "https://placehold.co/600x400/red/white?text=Explosion+Incident+Media",
   },
 ];
 
@@ -338,8 +338,10 @@ export function MockTweetGeneratorSidebar({
                               <VideoIcon className="size-8 text-purple-400 animate-pulse" />
                               <span className="text-[10px] ml-2 font-bold">Video Attached</span>
                             </div>
-                          ) : (
+                          ) : m.generatedTweet.mediaUrl ? (
                             <img src={m.generatedTweet.mediaUrl} alt="Disaster Preview" className="w-full h-28 object-cover" />
+                          ) : (
+                            <img src="https://placehold.co/600x400/gray/white?text=No+Media+Available" alt="Placeholder" className="w-full h-28 object-cover opacity-50" />
                           )}
                         </div>
                       )}

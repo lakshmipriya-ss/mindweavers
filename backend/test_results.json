@@ -1,0 +1,293 @@
+[
+  {
+    "test": "TEST 1: Simple Medical Emergency",
+    "processing_time_seconds": 38.67,
+    "result": {
+      "incident_type": "Medical",
+      "severity": "High",
+      "location": "Oak Street",
+      "strategic_priority": "Immediate medical response. Ensure clear access for emergency vehicles without delaying treatment time, based on historical data where timely intervention is critical in stroke cases.",
+      "estimated_casualties": "Few",
+      "actions": [
+        {
+          "agency": "Medical",
+          "action": {
+            "ambulances_dispatched": 1,
+            "unit_names": [
+              "Stroke Response Team"
+            ],
+            "action_description": "Dispatch Stroke Response Team to Oak Street for suspected acute strokes. Prioritize clearing the immediate area around emergency vehicles and establish a quick-access route from parking lots directly into treatment rooms, minimizing delay time as per strategic priority guidelines based on stroke intervention urgency.",
+            "triage_setup": false,
+            "destination_hospital": "Neurological Center",
+            "requests_to_other_agencies": []
+          }
+        }
+      ],
+      "agent_logs": [
+        "Dispatcher: Analyzing incoming tweet against Historical Memory...",
+        "Dispatcher: Detected High severity Medical at Oak Street.",
+        "Dispatcher: Estimated casualties: Few",
+        "Dispatcher: STRATEGIC PRIORITY -> Immediate medical response. Ensure clear access for emergency vehicles without delaying treatment time, based on historical data where timely intervention is critical in stroke cases.",
+        "Dispatcher: Dispatching agencies: Medical",
+        "Medical Agent: Receiving dispatch and strategic priority...",
+        "Medical Agent: Action determined -> {\"ambulances_dispatched\": 1, \"unit_names\": [\"Stroke Response Team\"], \"action_description\": \"Dispatch Stroke Response Team to Oak Street for suspected acute strokes. Prioritize clearing the immediate area around emergency vehicles and establish a quick-access route from parking lots directly into tre..."
+      ]
+    }
+  },
+  {
+    "test": "TEST 2: Multi-Agency Fire + Rescue",
+    "processing_time_seconds": 4.24,
+    "result": {
+      "incident_type": "Fire",
+      "severity": "Critical",
+      "location": "Market Square",
+      "strategic_priority": "Immediate dispatch of fire engines to extinguish flames and rescue trapped individuals. Ensure evacuation routes are clear for escape.",
+      "estimated_casualties": "Few",
+      "actions": [
+        {
+          "agency": "Fire",
+          "action": {
+            "units_dispatched": 3,
+            "unit_names": [
+              "Engine_1",
+              "Engine_2",
+              "Rescue_1"
+            ],
+            "action_description": "Dispatching three fire engines to Market Square. Engines will focus on extinguishing flames and creating safe zones for evacuation while Rescue_1 assists with immediate extractions of trapped individuals.",
+            "estimated_response_time_mins": 5,
+            "requests_to_other_agencies": [
+              "Request Medical to establish a triage area near the scene"
+            ]
+          }
+        }
+      ],
+      "agent_logs": [
+        "Dispatcher: Analyzing incoming tweet against Historical Memory...",
+        "Dispatcher: Detected Critical severity Fire at Market Square.",
+        "Dispatcher: Estimated casualties: Few",
+        "Dispatcher: STRATEGIC PRIORITY -> Immediate dispatch of fire engines to extinguish flames and rescue trapped individuals. Ensure evacuation routes are clear for escape.",
+        "Dispatcher: Dispatching agencies: Fire",
+        "Fire Agent: Receiving dispatch and strategic priority...",
+        "Fire Agent: Action determined -> {\"units_dispatched\": 3, \"unit_names\": [\"Engine_1\", \"Engine_2\", \"Rescue_1\"], \"action_description\": \"Dispatching three fire engines to Market Square. Engines will focus on extinguishing flames and creating safe zones for evacuation while Rescue_1 assists with immediate extractions of trapped individua..."
+      ]
+    }
+  },
+  {
+    "test": "TEST 3: Critical Chemical Spill (Hazmat)",
+    "processing_time_seconds": 7.96,
+    "result": {
+      "incident_type": "Hazmat",
+      "severity": "Critical",
+      "location": "Highway 7",
+      "strategic_priority": "Immediate Hazardous Materials (Hazmat) team deployment to contain and neutralize the chemical spill, followed by Fire services for potential fires. Ensure evacuation of nearby residents due to health risks.",
+      "estimated_casualties": "Mass",
+      "actions": [
+        {
+          "agency": "Hazmat",
+          "action": {
+            "hazmat_teams_dispatched": 2,
+            "unit_names": [
+              "Hazmat_Team_1",
+              "Fire_Unit"
+            ],
+            "action_description": "Deploying Hazmat_Team_1 to the spill site on Highway 7, donning full Level-A PPE for immediate containment. Fire_Unit positioned at ready state with fire suppressants and hose lines prepared in case of ignition from chemical reaction or nearby flammable materials. Residents within a two-block radius are being evacuated to safe zones as per health risk assessments, coordinating closely with local law enforcement for traffic control during the process.",
+            "threat_level": "High",
+            "evacuation_radius_blocks": 2,
+            "decontamination_setup": true,
+            "requests_to_other_agencies": [
+              "Request Law Enforcement to assist in resident evacuations and maintain roadway safety"
+            ]
+          }
+        },
+        {
+          "agency": "Fire",
+          "action": {
+            "units_dispatched": 5,
+            "unit_names": [
+              "Hazmat_Team1",
+              "Fire_Engine1",
+              "Evacuee_Transport2"
+            ],
+            "action_description": "Deploying Hazmat Team to assess and contain chemical spill on Highway 7, with Fire Engine providing immediate fire suppression capabilities if needed. Coordinating Evacuee Transport for the safe evacuation of nearby residents in a mass casualty scenario due to health risks from hazardous materials exposure",
+            "estimated_response_time_mins": 10,
+            "requests_to_other_agencies": [
+              "Request Medical teams at staging areas near Highway 7 for potential treatment and triage of evacuees"
+            ]
+          }
+        }
+      ],
+      "agent_logs": [
+        "Dispatcher: Analyzing incoming tweet against Historical Memory...",
+        "Dispatcher: Detected Critical severity Hazmat at Highway 7.",
+        "Dispatcher: Estimated casualties: Mass",
+        "Dispatcher: STRATEGIC PRIORITY -> Immediate Hazardous Materials (Hazmat) team deployment to contain and neutralize the chemical spill, followed by Fire services for potential fires. Ensure evacuation of nearby residents due to health risks.",
+        "Dispatcher: Dispatching agencies: Hazmat, Fire",
+        "Hazmat Agent: Receiving dispatch and strategic priority...",
+        "Hazmat Agent: Action determined -> {\"hazmat_teams_dispatched\": 2, \"unit_names\": [\"Hazmat_Team_1\", \"Fire_Unit\"], \"action_description\": \"Deploying Hazmat_Team_1 to the spill site on Highway 7, donning full Level-A PPE for immediate containment. Fire_Unit positioned at ready state with fire suppressants and hose lines prepared in case o...",
+        "Fire Agent: Receiving dispatch and strategic priority...",
+        "Fire Agent: Action determined -> {\"units_dispatched\": 5, \"unit_names\": [\"Hazmat_Team1\", \"Fire_Engine1\", \"Evacuee_Transport2\"], \"action_description\": \"Deploying Hazmat Team to assess and contain chemical spill on Highway 7, with Fire Engine providing immediate fire suppression capabilities if needed. Coordinating Evacuee Transport f..."
+      ]
+    }
+  },
+  {
+    "test": "TEST 4: Infrastructure Failure",
+    "processing_time_seconds": 10.11,
+    "result": {
+      "incident_type": "Multi-Agency",
+      "severity": "Critical",
+      "location": "Bridge Road",
+      "strategic_priority": "Immediate Public Works intervention to assess and repair water mains. Simultaneously, deploy Fire for vehicle rescue after ground is stabilized; Medical teams on standby at triage points due to potential casualties from the incident or subsequent flooding.",
+      "estimated_casualties": "Few",
+      "actions": [
+        {
+          "agency": "Public Works",
+          "action": {
+            "crews_dispatched": 3,
+            "unit_names": [
+              "Water Main Repair Team",
+              "Fire Rescue Unit",
+              "Medical Triage Squad"
+            ],
+            "action_description": "Immediate dispatch of Water Main Repair Team to assess and begin emergency repairs on Bridge Road water mains. Fire Rescue Unit will wait for the area's stabilization before deploying rescue vehicles, while Medical Triage Squad establishes triage points at safe distances from potential flood zones.",
+            "utility_shutoffs": [
+              "Water supply to affected bridge"
+            ],
+            "roads_cleared": "Bridge Road near water main for emergency access",
+            "requests_to_other_agencies": [
+              "Coordinate with Fire Rescue Unit on timing and safety protocols post-repair.",
+              "Ensure Medical Triage Squad has necessary supplies at designated triage points."
+            ]
+          }
+        },
+        {
+          "agency": "Fire",
+          "action": {
+            "units_dispatched": 3,
+            "unit_names": [
+              "Engine_1",
+              "Rescue_2",
+              "Medical_Team"
+            ],
+            "action_description": "Deploying Engine_1 for water main assessment and repair, Rescue_2 with specialized vehicle rescue equipment to Bridge Road after Public Works confirms roadway stability. Medical Team on standby at designated triage points near incident location due to potential casualties from the event or flooding caused by damaged infrastructure",
+            "estimated_response_time_mins": 10,
+            "requests_to_other_agencies": [
+              "Request Public Works for immediate assessment and repair of water mains on Bridge Road. Request Medical teams at nearby locations to establish triage points"
+            ]
+          }
+        },
+        {
+          "agency": "Medical",
+          "action": {
+            "ambulances_dispatched": 2,
+            "unit_names": [
+              "Ambulance_4",
+              "Medical Response Team"
+            ],
+            "action_description": "Deploying Ambulance_4 and Medical Response Teams to Bridge Road for potential flood-related injuries. Public Works teams assess water mains while Fire units prepare vehicle rescue post stabilization of the area, with medical personnel ready at triage points as per strategic priority.",
+            "triage_setup": true,
+            "destination_hospital": "Local Hospital",
+            "requests_to_other_agencies": [
+              "Request Immediate Assistance from Public Works to assess and repair water mains",
+              "Coordinate Fire units for vehicle rescue post-stabilization"
+            ]
+          }
+        }
+      ],
+      "agent_logs": [
+        "Dispatcher: Analyzing incoming tweet against Historical Memory...",
+        "Dispatcher: Detected Critical severity Multi-Agency at Bridge Road.",
+        "Dispatcher: Estimated casualties: Few",
+        "Dispatcher: STRATEGIC PRIORITY -> Immediate Public Works intervention to assess and repair water mains. Simultaneously, deploy Fire for vehicle rescue after ground is stabilized; Medical teams on standby at triage points due to potential casualties from the incident or subsequent flooding.",
+        "Dispatcher: Dispatching agencies: Public Works, Fire, Medical",
+        "Public Works Agent: Receiving dispatch and strategic priority...",
+        "Public Works Agent: Action determined -> {\"crews_dispatched\": 3, \"unit_names\": [\"Water Main Repair Team\", \"Fire Rescue Unit\", \"Medical Triage Squad\"], \"action_description\": \"Immediate dispatch of Water Main Repair Team to assess and begin emergency repairs on Bridge Road water mains. Fire Rescue Unit will wait for the area's stabilization ...",
+        "Fire Agent: Receiving dispatch and strategic priority...",
+        "Fire Agent: Action determined -> {\"units_dispatched\": 3, \"unit_names\": [\"Engine_1\", \"Rescue_2\", \"Medical_Team\"], \"action_description\": \"Deploying Engine_1 for water main assessment and repair, Rescue_2 with specialized vehicle rescue equipment to Bridge Road after Public Works confirms roadway stability. Medical Team on standby at ...",
+        "Medical Agent: Receiving dispatch and strategic priority...",
+        "Medical Agent: Action determined -> {\"ambulances_dispatched\": 2, \"unit_names\": [\"Ambulance_4\", \"Medical Response Team\"], \"action_description\": \"Deploying Ambulance_4 and Medical Response Teams to Bridge Road for potential flood-related injuries. Public Works teams assess water mains while Fire units prepare vehicle rescue post stabili..."
+      ]
+    }
+  },
+  {
+    "test": "TEST 5: Earthquake (Multi-Agency Critical)",
+    "processing_time_seconds": 10.63,
+    "result": {
+      "incident_type": "Multi-Agency",
+      "severity": "Critical",
+      "location": "Downtown",
+      "strategic_priority": "Historical data shows Fire engines cannot reach epicenter due to debris. Prioritize Public Works to clear main access roads simultaneously with Fire dispatch and establish triage points for Medical teams as soon as possible, given the overwhelming number of casualties expected based on past earthquakes",
+      "estimated_casualties": "Mass",
+      "actions": [
+        {
+          "agency": "Fire",
+          "action": {
+            "units_dispatched": 4,
+            "unit_names": [
+              "Engine_1",
+              "Engine_2",
+              "Rescue_1",
+              "Medical_Team"
+            ],
+            "action_description": "Dispatching Fire engines and Rescue unit to clear debris with Public Works. Establish Medical triage points at staging area as soon as possible, coordinating closely for efficient casualty management based on historical data of mass injuries from earthquakes",
+            "estimated_response_time_mins": 10,
+            "requests_to_other_agencies": [
+              "Request Public Works to prioritize clearing Main Street and surrounding areas immediately",
+              "Coordinate with Medical teams for immediate setup at staging area"
+            ]
+          }
+        },
+        {
+          "agency": "Medical",
+          "action": {
+            "ambulances_dispatched": 5,
+            "unit_names": [
+              "Ambulance_1",
+              "Ambulance_2",
+              "Medical_Team_A",
+              "Medical_Team_B",
+              "Mobile Triage Unit"
+            ],
+            "action_description": "Immediate dispatch of all available Medical units to Downtown. Coordinate with Public Works for rapid clearing and access road debris removal, while Fire engines are directed towards secondary routes if possible or await further instructions due to blocked main roads. Establish multiple triage points throughout the affected area as quickly as resources allow based on historical earthquake casualty patterns.",
+            "triage_setup": true,
+            "destination_hospital": "Regional Trauma Center",
+            "requests_to_other_agencies": [
+              "Request Public Works for immediate road clearance in Downtown",
+              "Coordinate with Fire to redirect engines if possible or await further instructions"
+            ]
+          }
+        },
+        {
+          "agency": "Police",
+          "action": {
+            "patrols_dispatched": 2,
+            "unit_names": [
+              "Patrol_4",
+              "Public Works"
+            ],
+            "action_description": "Dispatching Patrol_4 to Downtown for earthquake aftermath. Coordinating with Public Works immediately clear main access roads, while Fire is on standby at designated safe zones until they can safely reach the epicenter of destruction. Establish multiple triage points around downtown area and coordinate Medical teams' arrivals as casualties are reported.",
+            "roadblocks_active": true,
+            "roadblock_locations": [
+              "Main St & Commerce Ave",
+              "Second Avenue at Market"
+            ],
+            "evacuation_ordered": false,
+            "additional_notes": "Ensuring Public Works and Fire teams have priority on road clearance for immediate casualty response. Casualties expected to be high; preparing additional triage areas as needed."
+          }
+        }
+      ],
+      "agent_logs": [
+        "Dispatcher: Analyzing incoming tweet against Historical Memory...",
+        "Dispatcher: Detected Critical severity Multi-Agency at Downtown.",
+        "Dispatcher: Estimated casualties: Mass",
+        "Dispatcher: STRATEGIC PRIORITY -> Historical data shows Fire engines cannot reach epicenter due to debris. Prioritize Public Works to clear main access roads simultaneously with Fire dispatch and establish triage points for Medical teams as soon as possible, given the overwhelming number of casualties expected based on past earthquakes",
+        "Dispatcher: Dispatching agencies: Fire, Medical, Police",
+        "Fire Agent: Receiving dispatch and strategic priority...",
+        "Fire Agent: Action determined -> {\"units_dispatched\": 4, \"unit_names\": [\"Engine_1\", \"Engine_2\", \"Rescue_1\", \"Medical_Team\"], \"action_description\": \"Dispatching Fire engines and Rescue unit to clear debris with Public Works. Establish Medical triage points at staging area as soon as possible, coordinating closely for efficient casua...",
+        "Medical Agent: Receiving dispatch and strategic priority...",
+        "Medical Agent: Action determined -> {\"ambulances_dispatched\": 5, \"unit_names\": [\"Ambulance_1\", \"Ambulance_2\", \"Medical_Team_A\", \"Medical_Team_B\", \"Mobile Triage Unit\"], \"action_description\": \"Immediate dispatch of all available Medical units to Downtown. Coordinate with Public Works for rapid clearing and access road debris removal, w...",
+        "Police Agent: Receiving dispatch and strategic priority...",
+        "Police Agent: Action determined -> {\"patrols_dispatched\": 2, \"unit_names\": [\"Patrol_4\", \"Public Works\"], \"action_description\": \"Dispatching Patrol_4 to Downtown for earthquake aftermath. Coordinating with Public Works immediately clear main access roads, while Fire is on standby at designated safe zones until they can safely reach th..."
+      ]
+    }
+  }
+]

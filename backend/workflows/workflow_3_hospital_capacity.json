@@ -1,0 +1,34 @@
+{
+  "name": "Workflow 3: Hospital Capacity Sync",
+  "nodes": [
+    {
+      "parameters": { "rule": { "interval": [ { "field": "minutes", "minutesInterval": 5 } ] } },
+      "name": "5 Min Timer",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [ 100, 300 ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const capacity = Math.floor(Math.random() * 50);\nreturn [{ json: { hospital: 'General Hospital', available_icu_beds: capacity } }];"
+      },
+      "name": "Check Capacity (Simulated)",
+      "type": "n8n-nodes-base.code",
+      "position": [ 300, 300 ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "http://api:8000/resources/hospitals",
+        "sendBody": true,
+        "bodyParameters": { "parameters": [ { "name": "payload", "value": "={{ $json }}" } ] }
+      },
+      "name": "Update FastAPI Resources",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [ 500, 300 ]
+    }
+  ],
+  "connections": {
+    "5 Min Timer": { "main": [ [ { "node": "Check Capacity (Simulated)", "type": "main", "index": 0 } ] ] },
+    "Check Capacity (Simulated)": { "main": [ [ { "node": "Update FastAPI Resources", "type": "main", "index": 0 } ] ] }
+  }
+}
