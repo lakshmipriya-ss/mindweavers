@@ -10,6 +10,7 @@ import { MedicalIntelligenceView } from "@/components/disaster/MedicalIntelligen
 import { TrafficIntelligenceView } from "@/components/disaster/TrafficIntelligenceView";
 import { SimulationControlsView } from "@/components/disaster/SimulationControlsView";
 import { SettingsView } from "@/components/disaster/SettingsView";
+import { MockTweetGeneratorSidebar } from "@/components/disaster/MockTweetGeneratorSidebar";
 import {
   ShieldAlert,
   LayoutDashboard,
@@ -28,6 +29,7 @@ import {
   Pause,
   Play,
   MessageSquare,
+  Sparkles,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -60,8 +62,9 @@ function Dashboard() {
   const [simSpeed, setSimSpeed] = useState<number>(1);
   const [timeStr, setTimeStr] = useState<string>("");
   const [notifCount, setNotifCount] = useState(3);
+  const [isMockSidebarOpen, setIsMockSidebarOpen] = useState(false);
 
-  const { state, running, setRunning, advance, reset } = useSimulation(3000 / simSpeed);
+  const { state, running, setRunning, advance, reset, injectIncident } = useSimulation(3000 / simSpeed);
   const s = stats(state);
 
   // Live Clock Update
@@ -166,7 +169,7 @@ function Dashboard() {
             </div>
           </div>
 
-          {/* Header Actions: Clock, Status, Emergency Level, Notifications, Theme & Profile */}
+          {/* Header Actions: Clock, Status, Emergency Level, Notifications, Theme, Mock Generator & Profile */}
           <div className="flex flex-wrap items-center gap-3 text-xs font-semibold">
             {/* Live HH:mm:ss Clock */}
             <div className="px-3 py-1.5 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 font-mono font-extrabold text-purple-700 dark:text-purple-300">
@@ -177,6 +180,14 @@ function Dashboard() {
             <span className="px-3 py-1.5 rounded-xl bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 font-extrabold border border-rose-200 flex items-center gap-1">
               <AlertTriangle className="size-3.5 text-rose-600" /> LEVEL 2 EMERGENCY
             </span>
+
+            {/* Mock Disaster Generator Trigger Button for Judges */}
+            <button
+              onClick={() => setIsMockSidebarOpen(true)}
+              className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-extrabold shadow-md hover:brightness-110 active:scale-95 transition-all flex items-center gap-1.5 border border-purple-300/40"
+            >
+              <Sparkles className="size-3.5 text-yellow-300 animate-spin" /> 📝 Mock Disaster Generator
+            </button>
 
             {/* Notifications Bell */}
             <button
@@ -244,6 +255,13 @@ function Dashboard() {
           {activeTab === "settings" && <SettingsView />}
         </div>
       </main>
+
+      {/* Mock Disaster Tweet Generator Sidebar Drawer */}
+      <MockTweetGeneratorSidebar
+        isOpen={isMockSidebarOpen}
+        onClose={() => setIsMockSidebarOpen(false)}
+        onInjectTweet={injectIncident}
+      />
     </div>
   );
 }
