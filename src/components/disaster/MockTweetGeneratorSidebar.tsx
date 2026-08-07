@@ -1,9 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Flame,
   Droplets,
   Activity,
-  AlertTriangle,
   Building2,
   Car,
   Train,
@@ -23,8 +22,11 @@ import {
   Play,
   Pause,
   Send,
-  Sliders,
+  Bot,
+  ListFilter,
   CheckCircle2,
+  ArrowRight,
+  ExternalLink,
 } from "lucide-react";
 
 type DisasterType =
@@ -80,132 +82,137 @@ const scenarioTemplates = [
   { name: "Building Collapse", type: "Building Collapse" as DisasterType, location: "Green Valley Apartment Complex", severity: 8, tone: "Witness" },
   { name: "Gas Leak", type: "Gas Leak" as DisasterType, location: "St. Jude Public School", severity: 8, tone: "Panic" },
   { name: "Airport Emergency", type: "Airport Emergency" as DisasterType, location: "Central Airport Terminal 2", severity: 9, tone: "Police" },
-  { name: "Cyclone", type: "Cyclone" as DisasterType, location: "Coastal Road", severity: 9, tone: "Witness" },
-  { name: "Chemical Spill", type: "Chemical Spill" as DisasterType, location: "Science Park Lab", severity: 8, tone: "Fire Department" },
 ];
+
+type ChatItem = {
+  id: string;
+  sender: "user" | "bot";
+  text: string;
+  time: string;
+  generatedTweet?: {
+    handle: string;
+    text: string;
+    location: string;
+    type: string;
+    severity: number;
+  };
+};
 
 export function MockTweetGeneratorSidebar({
   isOpen,
   onClose,
   onInjectTweet,
+  onSwitchToLiveFeed,
 }: {
   isOpen: boolean;
   onClose: () => void;
   onInjectTweet: (tweet: { handle: string; text: string; location: string; type: string; severity: number }) => void;
+  onSwitchToLiveFeed: () => void;
 }) {
+  const [activeTab, setActiveTab] = useState<"chatbot" | "wizard">("chatbot");
   const [disasterType, setDisasterType] = useState<DisasterType>("Fire");
   const [severity, setSeverity] = useState(8);
   const [location, setLocation] = useState("Vijayawada Railway Station");
   const [adults, setAdults] = useState(5);
   const [children, setChildren] = useState(2);
   const [critical, setCritical] = useState(1);
-  const [missing, setMissing] = useState(0);
   const [traffic, setTraffic] = useState("Road Blocked");
   const [weather, setWeather] = useState("Rain");
-  const [language, setLanguage] = useState("English");
   const [tone, setTone] = useState("Panic");
-  const [mediaType, setMediaType] = useState<"none" | "image" | "video">("none");
-  const [previewTweet, setPreviewTweet] = useState("");
-  const [hashtags, setHashtags] = useState<string[]>(["#Fire", "#Emergency", "#Rescue"]);
   const [fakeNews, setFakeNews] = useState(false);
   const [duplicateMode, setDuplicateMode] = useState(false);
   const [autoFeed, setAutoFeed] = useState(false);
   const [intervalSec, setIntervalSec] = useState(3);
-  const [batchSize, setBatchSize] = useState(1);
-  const [escalationMode, setEscalationMode] = useState(false);
 
-  // Generate AI Tweet Text based on form options
-  const generateTweetText = () => {
+  // Chatbot State
+  const [chatInput, setChatInput] = useState("");
+  const [chatHistory, setChatHistory] = useState<ChatItem[]>([
+    {
+      id: "bot-1",
+      sender: "bot",
+      text: "Hello Judge/Commander! I am your Mock Disaster Generator Bot. Describe any disaster scenario (e.g. 'Generate a severe train accident near Railway Station with heavy casualties') or pick options from the wizard tab below.",
+      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    },
+  ]);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatHistory]);
+
+  const generateTweetFromWizard = () => {
     let prefix = "🚨 EMERGENCY REPORT: ";
-    if (fakeNews) {
-      prefix = "⚠ UNVERIFIED RUMOR: ";
-    }
+    if (fakeNews) prefix = "⚠ UNVERIFIED RUMOR: ";
 
     let text = `${prefix}`;
-
     if (tone === "Panic") {
-      text += `HELP! Massive ${disasterType.toLowerCase()} reported near ${location}! People appear trapped! Victims: ${adults + children} injured. Please send emergency services immediately!`;
-    } else if (tone === "Witness") {
-      text += `Witnessed ${disasterType.toLowerCase()} at ${location}. Traffic condition: ${traffic}. Weather is ${weather}. Rescue crews needed!`;
+      text += `HELP! Severe ${disasterType.toLowerCase()} at ${location}! Smoke spreading fast, ${adults + children} people injured. Send emergency crews now! #Emergency #${disasterType.replace(/\s+/g, "")}`;
     } else if (tone === "News Reporter") {
-      text += `BREAKING: ${disasterType} reported at ${location}. Estimated casualties: ${adults + children}. Traffic is ${traffic}. Updates to follow.`;
+      text += `BREAKING: ${disasterType} reported at ${location}. Traffic is ${traffic}. Multiple emergency response units requested. #${disasterType.replace(/\s+/g, "")} #DisasterFlow`;
     } else {
-      text += `${disasterType} incident ongoing at ${location}. Severity: ${severity}/10. Priority dispatch requested.`;
+      text += `${disasterType} ongoing at ${location}. Severity: ${severity}/10. Priority dispatch initiated. #Emergency`;
     }
-
-    const tags = [`#${disasterType.replace(/\s+/g, "")}`, "#Emergency", "#Rescue", "#DisasterFlow"];
-    setHashtags(tags);
-    setPreviewTweet(`${text} ${tags.join(" ")}`);
+    return text;
   };
 
-  useEffect(() => {
-    generateTweetText();
-  }, [disasterType, severity, location, adults, children, traffic, weather, tone, fakeNews]);
-
-  // Auto Feed Stream timer
-  useEffect(() => {
-    let timer: any;
-    if (autoFeed) {
-      timer = setInterval(() => {
-        onInjectTweet({
-          handle: fakeNews ? "@unverified_source" : "@citizen_reporter",
-          text: previewTweet,
-          location,
-          type: disasterType,
-          severity,
-        });
-      }, intervalSec * 1000);
-    }
-    return () => clearInterval(timer);
-  }, [autoFeed, intervalSec, previewTweet, location, disasterType, severity]);
-
-  const resetForm = () => {
-    setDisasterType("Fire");
-    setSeverity(8);
-    setLocation("Vijayawada Railway Station");
-    setAdults(5);
-    setChildren(2);
-    setCritical(1);
-    setMissing(0);
-    setTraffic("Road Blocked");
-    setWeather("Rain");
-    setLanguage("English");
-    setTone("Panic");
-    setMediaType("none");
-    setFakeNews(false);
-    setDuplicateMode(false);
-    setAutoFeed(false);
-    setEscalationMode(false);
+  const handleInjectFromWizard = () => {
+    const text = generateTweetFromWizard();
+    const tweetPayload = {
+      handle: fakeNews ? "@unverified_source" : "@citizen_alert",
+      text,
+      location,
+      type: disasterType,
+      severity,
+    };
+    onInjectTweet(tweetPayload);
+    onSwitchToLiveFeed();
   };
 
-  const handleInject = () => {
-    if (duplicateMode) {
-      // Inject 3 similar duplicate tweets
-      const duplicates = [
-        previewTweet,
-        `Duplicate Report: ${disasterType} at ${location}! Smoke and fire spreading fast! #Emergency`,
-        `Urgent: ${disasterType} confirmed near ${location}. Multiple casualties reported!`,
-      ];
-      duplicates.forEach((text, i) => {
-        setTimeout(() => {
-          onInjectTweet({
-            handle: `@witness_${i + 1}`,
-            text,
-            location,
-            type: disasterType,
-            severity,
-          });
-        }, i * 300);
-      });
-    } else {
-      onInjectTweet({
-        handle: fakeNews ? "@unverified_source" : "@citizen_alert",
-        text: previewTweet,
-        location,
-        type: disasterType,
-        severity,
-      });
-    }
+  const handleChatSubmit = (customQuery?: string) => {
+    const query = customQuery || chatInput;
+    if (!query.trim()) return;
+
+    const userMsg: ChatItem = {
+      id: `u-${Date.now()}`,
+      sender: "user",
+      text: query,
+      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    };
+
+    setChatHistory((prev) => [...prev, userMsg]);
+    if (!customQuery) setChatInput("");
+
+    // Simulate Bot Tweet Generation
+    setTimeout(() => {
+      let inferredType: DisasterType = "Fire";
+      const qLower = query.toLowerCase();
+      if (qLower.includes("flood")) inferredType = "Flood";
+      else if (qLower.includes("train")) inferredType = "Train Derailment";
+      else if (qLower.includes("explosion") || qLower.includes("blast")) inferredType = "Explosion";
+      else if (qLower.includes("gas") || qLower.includes("leak")) inferredType = "Gas Leak";
+      else if (qLower.includes("collapse")) inferredType = "Building Collapse";
+      else if (qLower.includes("airport")) inferredType = "Airport Emergency";
+
+      const generatedText = `🚨 MOCK DISASTER TWEET: "${query}" - Massive emergency reported near Vijayawada Junction. Urgent fire, medical & police dispatch requested! #Emergency #${inferredType.replace(/\s+/g, "")}`;
+
+      const generatedTweetObj = {
+        handle: "@judge_scenario_test",
+        text: generatedText,
+        location: "Vijayawada Junction",
+        type: inferredType,
+        severity: 9,
+      };
+
+      const botMsg: ChatItem = {
+        id: `bot-${Date.now()}`,
+        sender: "bot",
+        text: `Generated Tweet for Scenario: "${query}". Click below to inject directly into the Live Feed!`,
+        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        generatedTweet: generatedTweetObj,
+      };
+
+      setChatHistory((prev) => [...prev, botMsg]);
+    }, 600);
   };
 
   const applyTemplate = (t: typeof scenarioTemplates[0]) => {
@@ -213,20 +220,6 @@ export function MockTweetGeneratorSidebar({
     setLocation(t.location);
     setSeverity(t.severity);
     setTone(t.tone);
-  };
-
-  const getSeverityBadgeClass = () => {
-    if (severity >= 8) return "bg-rose-500 text-white";
-    if (severity >= 6) return "bg-amber-500 text-white";
-    if (severity >= 4) return "bg-yellow-500 text-slate-900";
-    return "bg-emerald-500 text-white";
-  };
-
-  const getSeverityLabel = () => {
-    if (severity >= 8) return "Critical";
-    if (severity >= 6) return "High";
-    if (severity >= 4) return "Medium";
-    return "Low";
   };
 
   if (!isOpen) return null;
@@ -241,308 +234,229 @@ export function MockTweetGeneratorSidebar({
           </div>
           <div>
             <h2 className="text-base font-extrabold flex items-center gap-2 leading-none">
-              📝 Mock Disaster Generator
+              📝 Mock Tweet Generator Sidebar
             </h2>
-            <p className="text-xs text-purple-200 mt-0.5">Judge Testbench &amp; Scenario Injector</p>
+            <p className="text-xs text-purple-200 mt-0.5">Judge Scenario Chatbot &amp; Live Feed Injector</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={resetForm}
-            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors text-xs font-semibold flex items-center gap-1"
-            title="Reset Form"
-          >
-            <RotateCcw className="size-4" /> Reset
-          </button>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
-            title="Collapse Sidebar"
-          >
-            <X className="size-5" />
-          </button>
-        </div>
+        <button
+          onClick={onClose}
+          className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+          title="Collapse Sidebar"
+        >
+          <X className="size-5" />
+        </button>
       </div>
 
-      {/* Form Content - Scrollable */}
-      <div className="flex-1 overflow-y-auto p-5 space-y-6 text-xs font-semibold">
-        {/* Scenario Templates Quick Cards */}
-        <div>
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-2">
-            One-Click Scenario Templates
-          </span>
-          <div className="grid grid-cols-2 gap-2">
-            {scenarioTemplates.map((t) => (
-              <button
-                key={t.name}
-                onClick={() => applyTemplate(t)}
-                className="p-2.5 rounded-xl border border-purple-200 dark:border-purple-800 bg-purple-50/40 dark:bg-purple-950/20 hover:bg-purple-100 dark:hover:bg-purple-900/40 text-left transition-all flex items-center justify-between group"
+      {/* Tab Switcher: Chatbot vs Option Wizard */}
+      <div className="p-2 bg-purple-50/60 dark:bg-purple-950/40 border-b border-purple-100 dark:border-purple-900 flex gap-2 shrink-0">
+        <button
+          onClick={() => setActiveTab("chatbot")}
+          className={`flex-1 py-2 rounded-xl font-extrabold text-xs flex items-center justify-center gap-2 transition-all ${
+            activeTab === "chatbot"
+              ? "bg-purple-600 text-white shadow-md"
+              : "bg-card text-muted-foreground hover:bg-purple-100 dark:hover:bg-purple-900/40"
+          }`}
+        >
+          <Bot className="size-4" /> 🤖 Disaster Chatbot
+        </button>
+        <button
+          onClick={() => setActiveTab("wizard")}
+          className={`flex-1 py-2 rounded-xl font-extrabold text-xs flex items-center justify-center gap-2 transition-all ${
+            activeTab === "wizard"
+              ? "bg-purple-600 text-white shadow-md"
+              : "bg-card text-muted-foreground hover:bg-purple-100 dark:hover:bg-purple-900/40"
+          }`}
+        >
+          <ListFilter className="size-4" /> 🎯 Option Selector
+        </button>
+      </div>
+
+      {/* TAB 1: Disaster Chatbot */}
+      {activeTab === "chatbot" && (
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+          {/* Chat Messages */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 font-sans text-xs">
+            {chatHistory.map((m) => (
+              <div
+                key={m.id}
+                className={`flex flex-col ${
+                  m.sender === "user" ? "items-end" : "items-start"
+                }`}
               >
-                <span className="font-extrabold text-foreground group-hover:text-purple-700">{t.name}</span>
-                <Sparkles className="size-3.5 text-purple-400 group-hover:text-purple-600" />
-              </button>
+                {m.sender === "bot" && (
+                  <span className="text-[10px] font-extrabold text-purple-600 dark:text-purple-400 mb-1 flex items-center gap-1">
+                    <Bot className="size-3" /> Mock Tweet Bot
+                  </span>
+                )}
+                <div
+                  className={`max-w-[85%] p-3.5 rounded-2xl font-semibold leading-relaxed shadow-xs ${
+                    m.sender === "user"
+                      ? "bg-purple-600 text-white rounded-br-none"
+                      : "bg-purple-50 dark:bg-purple-950/40 text-foreground border border-purple-100 dark:border-purple-900 rounded-bl-none"
+                  }`}
+                >
+                  {m.text}
+
+                  {/* Injectable Tweet Preview Box inside Chat */}
+                  {m.generatedTweet && (
+                    <div className="mt-3 p-3 rounded-xl bg-card border border-purple-200 dark:border-purple-800 text-xs space-y-2">
+                      <p className="font-extrabold text-purple-700 dark:text-purple-300">{m.generatedTweet.text}</p>
+                      <button
+                        onClick={() => {
+                          onInjectTweet(m.generatedTweet!);
+                          onSwitchToLiveFeed();
+                        }}
+                        className="w-full py-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-extrabold text-xs shadow-xs hover:brightness-110 flex items-center justify-center gap-1.5 active:scale-95 transition-all"
+                      >
+                        <Send className="size-3.5" /> 🚀 Inject to Live Feed &amp; Open Live Tab
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <span className="text-[10px] text-muted-foreground mt-1 px-1">{m.time}</span>
+              </div>
             ))}
+            <div ref={chatEndRef} />
           </div>
-        </div>
 
-        {/* Disaster Type */}
-        <div className="space-y-2">
-          <label className="text-xs font-bold text-foreground">Disaster Type</label>
-          <select
-            value={disasterType}
-            onChange={(e) => setDisasterType(e.target.value as DisasterType)}
-            className="w-full p-3 rounded-xl border border-purple-200 dark:border-purple-800 bg-background text-xs font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-          >
-            {Object.keys(disasterIcons).map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Severity Slider */}
-        <div className="space-y-2.5 p-4 rounded-2xl bg-purple-50/40 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900">
-          <div className="flex items-center justify-between">
-            <label className="text-xs font-bold text-foreground">Severity Level (1–10)</label>
-            <span className={`px-3 py-1 rounded-full text-xs font-extrabold shadow-xs ${getSeverityBadgeClass()}`}>
-              Level {severity} — {getSeverityLabel()}
-            </span>
+          {/* Quick Prompt Chips */}
+          <div className="px-3 py-2 border-t border-purple-100 dark:border-purple-900 bg-purple-50/40 dark:bg-purple-950/20 shrink-0 flex gap-1.5 overflow-x-auto text-[11px]">
+            <button onClick={() => handleChatSubmit("Generate factory fire near Industrial Sector 4")} className="whitespace-nowrap px-2.5 py-1 rounded-full border border-purple-200 dark:border-purple-800 bg-card hover:bg-purple-100 font-bold text-purple-700 dark:text-purple-300 shrink-0">
+              🔥 Factory Fire
+            </button>
+            <button onClick={() => handleChatSubmit("Generate train derailment near Railway Station")} className="whitespace-nowrap px-2.5 py-1 rounded-full border border-purple-200 dark:border-purple-800 bg-card hover:bg-purple-100 font-bold text-purple-700 dark:text-purple-300 shrink-0">
+              🚆 Train Derailment
+            </button>
+            <button onClick={() => handleChatSubmit("Generate urban flood near Market Road")} className="whitespace-nowrap px-2.5 py-1 rounded-full border border-purple-200 dark:border-purple-800 bg-card hover:bg-purple-100 font-bold text-purple-700 dark:text-purple-300 shrink-0">
+              🌊 Urban Flood
+            </button>
           </div>
-          <input
-            type="range"
-            min="1"
-            max="10"
-            value={severity}
-            onChange={(e) => setSeverity(Number(e.target.value))}
-            className="w-full accent-purple-600 cursor-pointer"
-          />
-        </div>
 
-        {/* Location Methods */}
-        <div className="space-y-3">
-          <label className="text-xs font-bold text-foreground">Location Selection</label>
-          <input
-            type="text"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            placeholder="Search location (e.g., Vijayawada Railway Station)..."
-            className="w-full p-3 rounded-xl border border-purple-200 dark:border-purple-800 bg-background text-xs font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-          />
-          <div className="flex gap-2">
-            <select
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              className="flex-1 p-2.5 rounded-xl border border-purple-200 dark:border-purple-800 bg-background text-xs font-semibold text-foreground"
+          {/* Chat Input Bar */}
+          <div className="p-3 border-t border-purple-100 dark:border-purple-900 bg-card flex gap-2 shrink-0">
+            <input
+              type="text"
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleChatSubmit()}
+              placeholder="Type disaster scenario (e.g. Chemical leak at lab)..."
+              className="flex-1 px-3.5 py-2.5 rounded-xl border border-purple-200 dark:border-purple-800 bg-background text-xs font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+            />
+            <button
+              onClick={() => handleChatSubmit()}
+              className="px-4 py-2.5 rounded-xl bg-purple-600 text-white font-bold text-xs hover:bg-purple-700 active:scale-95 transition-all shadow-md"
             >
-              {commonLocations.map((loc) => (
-                <option key={loc} value={loc}>
-                  {loc}
+              <Send className="size-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 2: Option Selector Wizard */}
+      {activeTab === "wizard" && (
+        <div className="flex-1 overflow-y-auto p-5 space-y-5 text-xs font-semibold">
+          {/* Quick Scenario Templates */}
+          <div>
+            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-2">
+              One-Click Presets
+            </span>
+            <div className="grid grid-cols-2 gap-2">
+              {scenarioTemplates.map((t) => (
+                <button
+                  key={t.name}
+                  onClick={() => applyTemplate(t)}
+                  className="p-2 rounded-xl border border-purple-200 dark:border-purple-800 bg-purple-50/40 dark:bg-purple-950/20 hover:bg-purple-100 text-left transition-all flex items-center justify-between group"
+                >
+                  <span className="font-extrabold text-foreground group-hover:text-purple-700">{t.name}</span>
+                  <Sparkles className="size-3 text-purple-400" />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Disaster Type */}
+          <div>
+            <label className="text-xs font-bold text-foreground">Disaster Type</label>
+            <select
+              value={disasterType}
+              onChange={(e) => setDisasterType(e.target.value as DisasterType)}
+              className="w-full p-2.5 mt-1 rounded-xl border border-purple-200 dark:border-purple-800 bg-background text-xs font-bold"
+            >
+              {Object.keys(disasterIcons).map((type) => (
+                <option key={type} value={type}>
+                  {type}
                 </option>
               ))}
             </select>
-            <button
-              onClick={() => setLocation("Lat: 16.5062, Long: 80.6480 (Vijayawada Junction)")}
-              className="px-3 py-2.5 rounded-xl bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 font-extrabold text-xs flex items-center gap-1 hover:bg-purple-200"
-            >
-              <MapPin className="size-3.5" /> Pick Map
-            </button>
           </div>
-        </div>
 
-        {/* Number of Victims Stepper */}
-        <div className="space-y-2.5 p-4 rounded-2xl bg-purple-50/40 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900">
-          <label className="text-xs font-bold text-foreground">Number of Victims Breakdown</label>
-          <div className="grid grid-cols-2 gap-3 text-xs">
-            <div className="flex items-center justify-between p-2 rounded-xl bg-card border border-border">
-              <span>Adults</span>
-              <div className="flex items-center gap-2">
-                <button onClick={() => setAdults(Math.max(0, adults - 1))} className="p-1 rounded bg-muted"><Minus className="size-3" /></button>
-                <span className="font-extrabold w-4 text-center">{adults}</span>
-                <button onClick={() => setAdults(adults + 1)} className="p-1 rounded bg-muted"><Plus className="size-3" /></button>
-              </div>
+          {/* Severity Slider */}
+          <div className="p-3 rounded-xl bg-purple-50/40 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900 space-y-2">
+            <div className="flex justify-between items-center">
+              <span>Severity Level (1-10)</span>
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-purple-600 text-white">
+                Level {severity}
+              </span>
             </div>
-            <div className="flex items-center justify-between p-2 rounded-xl bg-card border border-border">
-              <span>Children</span>
-              <div className="flex items-center gap-2">
-                <button onClick={() => setChildren(Math.max(0, children - 1))} className="p-1 rounded bg-muted"><Minus className="size-3" /></button>
-                <span className="font-extrabold w-4 text-center">{children}</span>
-                <button onClick={() => setChildren(children + 1)} className="p-1 rounded bg-muted"><Plus className="size-3" /></button>
-              </div>
-            </div>
-            <div className="flex items-center justify-between p-2 rounded-xl bg-card border border-border">
-              <span>Critical</span>
-              <div className="flex items-center gap-2">
-                <button onClick={() => setCritical(Math.max(0, critical - 1))} className="p-1 rounded bg-muted"><Minus className="size-3" /></button>
-                <span className="font-extrabold w-4 text-center">{critical}</span>
-                <button onClick={() => setCritical(critical + 1)} className="p-1 rounded bg-muted"><Plus className="size-3" /></button>
-              </div>
-            </div>
-            <div className="flex items-center justify-between p-2 rounded-xl bg-card border border-border">
-              <span>Missing</span>
-              <div className="flex items-center gap-2">
-                <button onClick={() => setMissing(Math.max(0, missing - 1))} className="p-1 rounded bg-muted"><Minus className="size-3" /></button>
-                <span className="font-extrabold w-4 text-center">{missing}</span>
-                <button onClick={() => setMissing(missing + 1)} className="p-1 rounded bg-muted"><Plus className="size-3" /></button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Environment Options: Traffic, Weather, Language, Tone */}
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="text-xs font-bold text-foreground">Traffic Condition</label>
-            <select value={traffic} onChange={(e) => setTraffic(e.target.value)} className="w-full p-2.5 mt-1 rounded-xl border border-purple-200 dark:border-purple-800 bg-background text-xs font-semibold">
-              <option value="Normal">Normal</option>
-              <option value="Moderate">Moderate</option>
-              <option value="Heavy">Heavy</option>
-              <option value="Road Blocked">Road Blocked</option>
-            </select>
-          </div>
-          <div>
-            <label className="text-xs font-bold text-foreground">Weather</label>
-            <select value={weather} onChange={(e) => setWeather(e.target.value)} className="w-full p-2.5 mt-1 rounded-xl border border-purple-200 dark:border-purple-800 bg-background text-xs font-semibold">
-              <option value="Sunny">Sunny</option>
-              <option value="Rain">Rain</option>
-              <option value="Storm">Storm</option>
-              <option value="Wind">Wind</option>
-              <option value="Fog">Fog</option>
-            </select>
-          </div>
-          <div>
-            <label className="text-xs font-bold text-foreground">Language</label>
-            <select value={language} onChange={(e) => setLanguage(e.target.value)} className="w-full p-2.5 mt-1 rounded-xl border border-purple-200 dark:border-purple-800 bg-background text-xs font-semibold">
-              <option value="English">English</option>
-              <option value="Hindi">Hindi</option>
-              <option value="Telugu">Telugu</option>
-              <option value="Tamil">Tamil</option>
-              <option value="Kannada">Kannada</option>
-              <option value="Malayalam">Malayalam</option>
-            </select>
-          </div>
-          <div>
-            <label className="text-xs font-bold text-foreground">Tweet Tone</label>
-            <select value={tone} onChange={(e) => setTone(e.target.value)} className="w-full p-2.5 mt-1 rounded-xl border border-purple-200 dark:border-purple-800 bg-background text-xs font-semibold">
-              <option value="Citizen">Citizen</option>
-              <option value="Witness">Witness</option>
-              <option value="News Reporter">News Reporter</option>
-              <option value="Police">Police</option>
-              <option value="Fire Department">Fire Department</option>
-              <option value="Panic">Panic</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Media Upload Mock */}
-        <div className="p-3.5 rounded-2xl bg-purple-50/40 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Upload className="size-4 text-purple-600" />
-            <span className="font-bold">Media Upload Mock</span>
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setMediaType(mediaType === "image" ? "none" : "image")}
-              className={`px-3 py-1 rounded-lg text-xs font-extrabold ${mediaType === "image" ? "bg-purple-600 text-white" : "bg-card border border-border"}`}
-            >
-              Image
-            </button>
-            <button
-              onClick={() => setMediaType(mediaType === "video" ? "none" : "video")}
-              className={`px-3 py-1 rounded-lg text-xs font-extrabold ${mediaType === "video" ? "bg-purple-600 text-white" : "bg-card border border-border"}`}
-            >
-              Video
-            </button>
-          </div>
-        </div>
-
-        {/* Generated Tweet Preview Card */}
-        <div className="flashcard p-4 border-purple-300 bg-purple-50/50 dark:bg-purple-950/30 space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-extrabold text-purple-700 dark:text-purple-300 flex items-center gap-1.5">
-              <Sparkles className="size-3.5" /> Generated AI Tweet Preview
-            </span>
-            <button onClick={generateTweetText} className="px-2.5 py-1 rounded-lg bg-purple-600 text-white font-bold text-[10px] hover:bg-purple-700">
-              ✨ Regenerate
-            </button>
-          </div>
-          <p className="text-xs font-semibold text-foreground leading-relaxed pt-1">{previewTweet}</p>
-        </div>
-
-        {/* Advanced Simulation Toggles */}
-        <div className="space-y-3 p-4 rounded-2xl bg-purple-50/40 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
-            Judge Simulation Modes
-          </span>
-
-          <div className="flex items-center justify-between">
-            <span className="font-bold">Fake News Simulation</span>
-            <input type="checkbox" checked={fakeNews} onChange={(e) => setFakeNews(e.target.checked)} className="size-4 accent-purple-600 cursor-pointer" />
+            <input
+              type="range"
+              min="1"
+              max="10"
+              value={severity}
+              onChange={(e) => setSeverity(Number(e.target.value))}
+              className="w-full accent-purple-600 cursor-pointer"
+            />
           </div>
 
-          <div className="flex items-center justify-between">
-            <span className="font-bold">Duplicate Tweet Generator</span>
-            <input type="checkbox" checked={duplicateMode} onChange={(e) => setDuplicateMode(e.target.checked)} className="size-4 accent-purple-600 cursor-pointer" />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <span className="font-bold">Dynamic Incident Escalation</span>
-            <input type="checkbox" checked={escalationMode} onChange={(e) => setEscalationMode(e.target.checked)} className="size-4 accent-purple-600 cursor-pointer" />
-          </div>
-
-          <div className="flex items-center justify-between pt-2 border-t border-purple-200 dark:border-purple-800">
-            <span className="font-bold">Auto Feed Stream</span>
-            <div className="flex items-center gap-2">
-              <select value={intervalSec} onChange={(e) => setIntervalSec(Number(e.target.value))} className="p-1 rounded bg-background text-[11px]">
-                <option value={1}>1s</option>
-                <option value={3}>3s</option>
-                <option value={5}>5s</option>
-                <option value={10}>10s</option>
+          {/* Location & Tone */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-bold text-foreground">Location</label>
+              <select
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                className="w-full p-2.5 mt-1 rounded-xl border border-purple-200 dark:border-purple-800 bg-background text-xs font-semibold"
+              >
+                {commonLocations.map((loc) => (
+                  <option key={loc} value={loc}>
+                    {loc}
+                  </option>
+                ))}
               </select>
-              <input type="checkbox" checked={autoFeed} onChange={(e) => setAutoFeed(e.target.checked)} className="size-4 accent-purple-600 cursor-pointer" />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-foreground">Tone</label>
+              <select
+                value={tone}
+                onChange={(e) => setTone(e.target.value)}
+                className="w-full p-2.5 mt-1 rounded-xl border border-purple-200 dark:border-purple-800 bg-background text-xs font-semibold"
+              >
+                <option value="Panic">Panic</option>
+                <option value="Witness">Witness</option>
+                <option value="News Reporter">News Reporter</option>
+                <option value="Police">Police</option>
+              </select>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Footer Controls */}
-      <div className="p-4 border-t border-purple-100 dark:border-purple-900 bg-card flex flex-col gap-2 shrink-0">
-        <button
-          onClick={handleInject}
-          className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-extrabold text-xs shadow-lg hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2"
-        >
-          <Send className="size-4" /> 🚀 Inject Into Live Feed &amp; Trigger AI Agents
-        </button>
+          {/* Generated Preview */}
+          <div className="flashcard p-3 border-purple-300 bg-purple-50/50 dark:bg-purple-950/30 space-y-1.5">
+            <span className="text-[11px] font-extrabold text-purple-700 dark:text-purple-300">
+              Preview Tweet
+            </span>
+            <p className="text-xs font-bold text-foreground">{generateTweetFromWizard()}</p>
+          </div>
 
-        <div className="grid grid-cols-2 gap-2 text-[11px]">
+          {/* Inject Button */}
           <button
-            onClick={() => {
-              for (let i = 0; i < 10; i++) {
-                setTimeout(() => {
-                  onInjectTweet({
-                    handle: `@batch_reporter_${i + 1}`,
-                    text: `${disasterType} reported at ${location} - Incident #${i + 1}`,
-                    location,
-                    type: disasterType,
-                    severity,
-                  });
-                }, i * 200);
-              }
-            }}
-            className="p-2 rounded-lg border border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 font-bold hover:bg-purple-100"
+            onClick={handleInjectFromWizard}
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-extrabold text-xs shadow-lg hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2"
           >
-            ⚡ Generate 10 Tweets
-          </button>
-
-          <button
-            onClick={() => setAutoFeed(!autoFeed)}
-            className={`p-2 rounded-lg font-bold flex items-center justify-center gap-1 ${autoFeed ? "bg-rose-100 text-rose-700" : "bg-emerald-100 text-emerald-700"}`}
-          >
-            {autoFeed ? <Pause className="size-3" /> : <Play className="size-3" />}
-            {autoFeed ? "Stop Auto Feed" : "Start Auto Feed"}
+            <Send className="size-4" /> 🚀 Inject into Live Feed &amp; Open Live Feed Tab
           </button>
         </div>
-      </div>
+      )}
     </div>
   );
 }

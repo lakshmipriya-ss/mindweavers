@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Flame, Ambulance, Droplets, FlaskConical, AlertTriangle, ShieldCheck, Zap, XCircle, CheckCircle2 } from "lucide-react";
+import { Flame, Ambulance, Droplets, FlaskConical, AlertTriangle, ShieldCheck, Zap, XCircle, CheckCircle2, Sparkles } from "lucide-react";
 
-type TweetItem = {
+export type TweetItem = {
   id: string;
   handle: string;
   time: string;
@@ -13,6 +13,7 @@ type TweetItem = {
   confidence: number;
   isDuplicate: boolean;
   status: "New" | "Analyzed" | "Dispatched" | "Ignored";
+  isMock?: boolean;
 };
 
 const sampleTweets: TweetItem[] = [
@@ -83,9 +84,10 @@ const sampleTweets: TweetItem[] = [
   },
 ];
 
-export function LiveFeedView() {
-  const [tweets, setTweets] = useState<TweetItem[]>(sampleTweets);
-  const [selectedTweet, setSelectedTweet] = useState<TweetItem>(sampleTweets[0]);
+export function LiveFeedView({ injectedTweets = [] }: { injectedTweets?: TweetItem[] }) {
+  const allTweets = [...injectedTweets, ...sampleTweets];
+  const [tweets, setTweets] = useState<TweetItem[]>(allTweets);
+  const [selectedTweet, setSelectedTweet] = useState<TweetItem>(allTweets[0]);
 
   const handleAction = (status: "Analyzed" | "Dispatched" | "Ignored") => {
     setTweets((prev) =>
@@ -107,13 +109,25 @@ export function LiveFeedView() {
             <p className="text-xs text-muted-foreground mt-0.5">Real-time citizen posts ingested by Tweet Listener Agent</p>
           </div>
           <span className="px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-300">
-            {tweets.length} Active Stream
+            {allTweets.length} Active Stream
           </span>
         </div>
 
+        {/* Mock Tweet Banner if present */}
+        {injectedTweets.length > 0 && (
+          <div className="p-3 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white flex items-center justify-between shadow-md">
+            <span className="text-xs font-extrabold flex items-center gap-1.5">
+              <Sparkles className="size-4 text-yellow-300 animate-spin" /> {injectedTweets.length} Mock Disaster Tweets Ingested Live!
+            </span>
+            <span className="text-[10px] bg-white/20 px-2.5 py-0.5 rounded-full font-bold">
+              Judge Testbench Active
+            </span>
+          </div>
+        )}
+
         <div className="space-y-3">
-          {tweets.map((t) => {
-            const Icon = t.icon;
+          {allTweets.map((t) => {
+            const Icon = t.icon || Flame;
             const isSelected = selectedTweet.id === t.id;
             return (
               <div
@@ -131,102 +145,117 @@ export function LiveFeedView() {
                       <Icon className="size-4" />
                     </span>
                     <div>
-                      <span className="text-xs font-bold text-foreground">{t.handle}</span>
-                      <span className="text-[11px] text-muted-foreground ml-2">{t.time}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-foreground">{t.handle}</span>
+                        {t.isMock && (
+                          <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-purple-600 text-white">
+                            Mock Ingested
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[11px] text-muted-foreground">{t.time}</span>
                     </div>
                   </div>
                   <span
                     className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
                       t.status === "Dispatched"
-                        ? "bg-emerald-100 text-emerald-700"
+                        ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300"
+                        : t.status === "Analyzed"
+                        ? "bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-300"
                         : t.status === "Ignored"
-                        ? "bg-slate-100 text-slate-600"
-                        : "bg-rose-100 text-rose-700"
+                        ? "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                        : "bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-300"
                     }`}
                   >
                     {t.status}
                   </span>
                 </div>
-                <p className="mt-3 text-xs font-semibold text-foreground/90 leading-relaxed">{t.text}</p>
+
+                <p className="text-xs font-semibold text-foreground/90 mt-3 leading-relaxed">{t.text}</p>
+
+                <div className="mt-3 pt-3 border-t border-purple-100 dark:border-purple-900/50 flex flex-wrap items-center justify-between text-[11px] text-muted-foreground gap-2">
+                  <span className="font-bold text-purple-700 dark:text-purple-300">📍 {t.location}</span>
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono">Severity: <strong className="text-rose-600">{t.severity}/10</strong></span>
+                    <span className="font-mono">Confidence: <strong className="text-emerald-600">{Math.round(t.confidence * 100)}%</strong></span>
+                  </div>
+                </div>
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* Right Column: AI Analysis Panel */}
+      {/* Right Column: AI Analysis Inspector Panel */}
       <div className="lg:col-span-5">
-        <div className="flashcard p-6 sticky top-6 space-y-5 border-purple-200">
-          <div className="flex items-center justify-between border-b border-purple-100 pb-4 dark:border-purple-900">
-            <div>
-              <h3 className="text-base font-extrabold text-foreground flex items-center gap-2">
-                <ShieldCheck className="size-5 text-purple-600" /> AI Report Analysis Panel
-              </h3>
-              <p className="text-xs text-muted-foreground">Neural classification &amp; threat validation</p>
-            </div>
-            <span className="text-xs font-mono font-bold text-purple-600 bg-purple-100 dark:bg-purple-900/50 px-2.5 py-1 rounded-lg">
+        <div className="flashcard p-5 border-purple-200 sticky top-4 space-y-4">
+          <div className="flex items-center justify-between border-b border-purple-100 dark:border-purple-900 pb-3">
+            <h3 className="text-sm font-extrabold text-foreground flex items-center gap-2">
+              <Zap className="size-4 text-purple-600" /> AI Classification &amp; Triage Inspector
+            </h3>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-purple-100 text-purple-700">
               {selectedTweet.id}
             </span>
           </div>
 
-          <div className="space-y-4 text-xs">
-            <div className="p-3.5 rounded-xl bg-purple-50/50 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900">
+          <div className="space-y-3 text-xs">
+            <div className="p-3 rounded-xl bg-purple-50/40 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900 space-y-1">
               <span className="text-muted-foreground font-semibold">Selected Tweet Content</span>
-              <p className="mt-1 font-bold text-foreground leading-snug">{selectedTweet.text}</p>
+              <p className="font-bold text-foreground">{selectedTweet.text}</p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="p-3 rounded-xl bg-card border border-border">
-                <span className="text-[11px] text-muted-foreground font-medium">Incident Type</span>
-                <p className="text-sm font-extrabold text-foreground mt-0.5">{selectedTweet.type}</p>
+                <span className="text-muted-foreground font-semibold block">Incident Type</span>
+                <span className="font-extrabold text-purple-600 text-sm">{selectedTweet.type}</span>
               </div>
               <div className="p-3 rounded-xl bg-card border border-border">
-                <span className="text-[11px] text-muted-foreground font-medium">Location</span>
-                <p className="text-sm font-extrabold text-foreground mt-0.5 truncate">{selectedTweet.location}</p>
+                <span className="text-muted-foreground font-semibold block">Extracted Location</span>
+                <span className="font-extrabold text-foreground text-xs">{selectedTweet.location}</span>
               </div>
               <div className="p-3 rounded-xl bg-card border border-border">
-                <span className="text-[11px] text-muted-foreground font-medium">Severity Score</span>
-                <p className="text-sm font-extrabold text-rose-600 mt-0.5">{selectedTweet.severity} / 10</p>
+                <span className="text-muted-foreground font-semibold block">Severity Score</span>
+                <span className="font-extrabold text-rose-600 text-sm">{selectedTweet.severity} / 10</span>
               </div>
               <div className="p-3 rounded-xl bg-card border border-border">
-                <span className="text-[11px] text-muted-foreground font-medium">Confidence Score</span>
-                <p className="text-sm font-extrabold text-emerald-600 mt-0.5">{(selectedTweet.confidence * 100).toFixed(0)}%</p>
+                <span className="text-muted-foreground font-semibold block">AI Confidence</span>
+                <span className="font-extrabold text-emerald-600 text-sm">{Math.round(selectedTweet.confidence * 100)}%</span>
               </div>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-card border border-border flex items-center justify-between">
-              <span className="font-semibold text-muted-foreground">Duplicate Detection</span>
-              <span className={`px-2.5 py-0.5 rounded-full font-bold text-[11px] ${selectedTweet.isDuplicate ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700"}`}>
-                {selectedTweet.isDuplicate ? "Duplicate Report Merged" : "Unique Incident"}
+            <div className="p-3 rounded-xl bg-card border border-border flex items-center justify-between">
+              <span className="text-muted-foreground font-semibold">Duplicate Post Detection</span>
+              <span className={`font-extrabold text-xs px-2.5 py-0.5 rounded-full ${selectedTweet.isDuplicate ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700"}`}>
+                {selectedTweet.isDuplicate ? "Duplicate Identified" : "Unique Incident"}
               </span>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-card border border-border flex items-center justify-between">
-              <span className="font-semibold text-muted-foreground">Triage Status</span>
-              <span className="font-extrabold text-purple-600">{selectedTweet.status}</span>
+            {/* Triage Action Buttons */}
+            <div className="pt-2 space-y-2">
+              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
+                Manual Override Actions
+              </span>
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  onClick={() => handleAction("Analyzed")}
+                  className="py-2.5 rounded-xl bg-purple-600 text-white font-extrabold text-xs hover:bg-purple-700 transition-all shadow-xs"
+                >
+                  <CheckCircle2 className="size-3.5 inline mr-1" /> Analyze
+                </button>
+                <button
+                  onClick={() => handleAction("Dispatched")}
+                  className="py-2.5 rounded-xl bg-emerald-600 text-white font-extrabold text-xs hover:bg-emerald-700 transition-all shadow-xs"
+                >
+                  <ShieldCheck className="size-3.5 inline mr-1" /> Dispatch
+                </button>
+                <button
+                  onClick={() => handleAction("Ignored")}
+                  className="py-2.5 rounded-xl bg-slate-200 dark:bg-slate-800 text-foreground font-extrabold text-xs hover:bg-slate-300 transition-all"
+                >
+                  <XCircle className="size-3.5 inline mr-1" /> Ignore
+                </button>
+              </div>
             </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="pt-2 grid grid-cols-3 gap-2">
-            <button
-              onClick={() => handleAction("Analyzed")}
-              className="inline-flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-purple-600 text-white font-bold text-xs shadow-md hover:bg-purple-700 active:scale-95 transition-all"
-            >
-              <Zap className="size-3.5" /> Analyze
-            </button>
-            <button
-              onClick={() => handleAction("Dispatched")}
-              className="inline-flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-emerald-600 text-white font-bold text-xs shadow-md hover:bg-emerald-700 active:scale-95 transition-all"
-            >
-              <CheckCircle2 className="size-3.5" /> Dispatch
-            </button>
-            <button
-              onClick={() => handleAction("Ignored")}
-              className="inline-flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border border-border bg-card text-foreground font-semibold text-xs hover:bg-muted active:scale-95 transition-all"
-            >
-              <XCircle className="size-3.5 text-muted-foreground" /> Ignore
-            </button>
           </div>
         </div>
       </div>

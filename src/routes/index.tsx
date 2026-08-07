@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useSimulation } from "@/hooks/use-simulation";
 import { stats } from "@/lib/disaster-sim";
 import { DashboardView } from "@/components/disaster/DashboardView";
-import { LiveFeedView } from "@/components/disaster/LiveFeedView";
+import { LiveFeedView, type TweetItem } from "@/components/disaster/LiveFeedView";
 import { AIAgentChatView } from "@/components/disaster/AIAgentChatView";
 import { SituationMap, DispatchLog } from "@/components/disaster/SituationMap";
 import { MedicalIntelligenceView } from "@/components/disaster/MedicalIntelligenceView";
@@ -30,6 +30,7 @@ import {
   Play,
   MessageSquare,
   Sparkles,
+  Flame,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -63,6 +64,7 @@ function Dashboard() {
   const [timeStr, setTimeStr] = useState<string>("");
   const [notifCount, setNotifCount] = useState(3);
   const [isMockSidebarOpen, setIsMockSidebarOpen] = useState(false);
+  const [injectedMockTweets, setInjectedMockTweets] = useState<TweetItem[]>([]);
 
   const { state, running, setRunning, advance, reset, injectIncident } = useSimulation(3000 / simSpeed);
   const s = stats(state);
@@ -84,6 +86,26 @@ function Dashboard() {
     } else {
       document.documentElement.classList.remove("dark");
     }
+  };
+
+  const handleInjectTweetPayload = (payload: { handle: string; text: string; location: string; type: string; severity: number }) => {
+    injectIncident(payload);
+    const newMockTweetItem: TweetItem = {
+      id: `mock-tw-${Date.now()}`,
+      handle: payload.handle,
+      time: "Just now",
+      text: payload.text,
+      icon: Flame,
+      type: payload.type,
+      location: payload.location,
+      severity: payload.severity,
+      confidence: 0.96,
+      isDuplicate: false,
+      status: "New",
+      isMock: true,
+    };
+    setInjectedMockTweets((prev) => [newMockTweetItem, ...prev]);
+    setActiveTab("live-feed");
   };
 
   const navItems: { id: TabType; label: string; icon: any }[] = [
@@ -228,7 +250,7 @@ function Dashboard() {
         {/* Tab Views Container */}
         <div key={activeTab} className="rise-in">
           {activeTab === "dashboard" && <DashboardView stats={s} incidentsCount={state.incidents.length} />}
-          {activeTab === "live-feed" && <LiveFeedView />}
+          {activeTab === "live-feed" && <LiveFeedView injectedTweets={injectedMockTweets} />}
           {activeTab === "ai-chatbot" && <AIAgentChatView />}
           {activeTab === "incident-map" && (
             <div className="grid gap-6 lg:grid-cols-12 rise-in">
@@ -260,7 +282,8 @@ function Dashboard() {
       <MockTweetGeneratorSidebar
         isOpen={isMockSidebarOpen}
         onClose={() => setIsMockSidebarOpen(false)}
-        onInjectTweet={injectIncident}
+        onInjectTweet={handleInjectTweetPayload}
+        onSwitchToLiveFeed={() => setActiveTab("live-feed")}
       />
     </div>
   );
