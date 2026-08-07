@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { emptyState, step, type SimState, type IncidentType } from "@/lib/disaster-sim";
+import { emptyState, step, type SimState, type IncidentType, type Incident } from "@/lib/disaster-sim";
 
 export function useSimulation(intervalMs = 3000) {
   const [state, setState] = useState<SimState>(() => emptyState());
@@ -41,7 +41,7 @@ export function useSimulation(intervalMs = 3000) {
           incidentId: id,
         };
 
-        const newIncident = {
+        const newIncident: Incident = {
           id,
           code: `INC-${Math.floor(100 + Math.random() * 900)}`,
           type: mappedType,
@@ -54,16 +54,8 @@ export function useSimulation(intervalMs = 3000) {
           reports: 1,
           stage: "detected" as const,
           createdAt: Date.now(),
-          tweets: [newTweet],
           dispatches: [],
-          agentLogs: [
-            {
-              id: `log-${Date.now()}`,
-              agent: "listener" as const,
-              at: Date.now(),
-              text: `Mock Tweet Ingested: "${payload.text.slice(0, 60)}..."`,
-            },
-          ],
+          injured: 2,
         };
 
         return {

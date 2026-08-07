@@ -28,133 +28,150 @@ export function AIAssistantView() {
       // High quality realistic multi-agent response fallback
       const lower = text.toLowerCase();
       let type = "Structural Incident";
-      let sev = "Severe";
-      let priority = "Dispatch combined fire, medical & police perimeter units immediately.";
-      
-      if (lower.includes("flood") || lower.includes("submerged")) {
-        type = "Flash Flood Emergency";
-        sev = "Critical";
-        priority = "Establish high-ground medical triage and deploy inflatable rescue rafts.";
-      } else if (lower.includes("fire") || lower.includes("smoke")) {
-        type = "Major Structural Fire";
-        sev = "Critical";
-        priority = "Deploy 3 ladder trucks, isolate gas utilities, and establish 300m perimeter.";
-      } else if (lower.includes("chem") || lower.includes("gas") || lower.includes("toxic")) {
-        type = "Hazmat Chemical Leak";
-        sev = "Critical";
-        priority = "Enforce 500m mandatory evacuation zone with Level-A decon suit teams.";
+      let sev = "High (8/10)";
+      let loc = "Central Operations Grid";
+
+      if (lower.includes("fire")) {
+        type = "Structural Fire";
+        sev = "Critical (9/10)";
+        loc = "Grand Central Plaza Sector 4";
+      } else if (lower.includes("flood")) {
+        type = "Severe Hydrological Flood";
+        sev = "High (7/10)";
+        loc = "North Highway Embankment";
+      } else if (lower.includes("chemical") || lower.includes("explosion")) {
+        type = "Hazmat Chemical Explosion";
+        sev = "Extreme (10/10)";
+        loc = "Apex Industrial Park";
+      } else if (lower.includes("car") || lower.includes("collision")) {
+        type = "Multi-Vehicle Traffic Crash";
+        sev = "Medium (6/10)";
+        loc = "Interstate 95 Exit 12";
       }
 
       setResult({
         incident_type: type,
         severity: sev,
-        location: "Central Metropolitan District",
-        strategic_priority: priority,
+        location: loc,
+        strategic_priority: "Immediate Multi-Agency Dispatch & Containment Perimeter",
         department_responses: {
-          Fire: { units: 3, status: "Deployed", detail: "Ladders active, hydration lines set." },
-          Medical: { units: 4, status: "Triage Active", detail: "Pre-notified City General Hospital ICU." },
-          Police: { units: 5, status: "Cordoned", detail: "Perimeter secured, rerouting civilian traffic." },
-          Hazmat: { units: 2, status: "Standby/Decon", detail: "Chemical sensor sweep in progress." }
+          Fire: { action_summary: "Deploying 2 foam tenders and 1 ladder truck. Evacuation cordon active." },
+          Medical: { action_summary: "3 ambulances dispatched with trauma paramedics. Trauma ward pre-notified." },
+          Police: { action_summary: "Establishing 300m safety perimeter and redirecting non-emergency traffic." }
         },
-        historical_lessons: "Historical Lesson: Fast inter-agency radio channel synchronization reduces dispatch delay by 42%."
+        historical_lessons: "Historical precedent match (94% confidence): Prior sector 4 incident required early signal preemption to prevent ambulance delay."
       });
     }
     setLoading(false);
   };
 
   return (
-    <div className="space-y-6">
-      <div className="panel p-6 bg-gradient-to-r from-primary/5 via-background to-accent/20">
-        <div className="flex items-center gap-3">
-          <div className="flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+    <div className="space-y-6 max-w-5xl mx-auto rise-in">
+      {/* Header Banner */}
+      <div className="flashcard p-6 bg-gradient-to-r from-card via-purple-50/20 to-purple-100/30 dark:to-purple-950/20 border-purple-200/70">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="flex size-10 items-center justify-center rounded-2xl bg-purple-600 text-white shadow-md">
             <Bot className="size-6" />
           </div>
           <div>
-            <h2 className="text-xl font-bold tracking-tight">Multi-Agent AI Emergency Assistant</h2>
+            <h2 className="text-lg font-extrabold text-foreground flex items-center gap-2">
+              Neural Multi-Agent AI Dispatch Assistant
+            </h2>
             <p className="text-xs text-muted-foreground">
-              Directly query the Mindweavers neural dispatcher. Test custom incident reports & watch autonomous agent negotiation.
+              Autonomous incident triage powered by Mindweavers Multi-Agent LLM Orchestration
             </p>
-          </div>
-        </div>
-
-        <div className="mt-6 space-y-3">
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={inputReport}
-              onChange={(e) => setInputReport(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleAnalyze()}
-              placeholder="Paste or type a live incident report (e.g., 'Fire breaking out at Market St')..."
-              className="flex-1 rounded-xl border border-border bg-card px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 shadow-sm"
-            />
-            <button
-              onClick={() => handleAnalyze()}
-              disabled={loading}
-              className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-xs font-semibold text-primary-foreground transition-all hover:bg-primary/90 shadow-sm disabled:opacity-50"
-            >
-              {loading ? <Sparkles className="size-4 animate-spin" /> : <Send className="size-4" />}
-              {loading ? "Synthesizing..." : "Analyze Incident"}
-            </button>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2 pt-2">
-            <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-              <Sparkles className="size-3 text-amber-500" /> Sample Scenarios:
-            </span>
-            {sampleScenarios.map((sc, i) => (
-              <button
-                key={i}
-                onClick={() => handleAnalyze(sc)}
-                className="rounded-lg border border-border bg-card px-2.5 py-1 text-xs text-foreground transition-all hover:bg-accent hover:border-primary/30"
-              >
-                Scenario #{i + 1}
-              </button>
-            ))}
           </div>
         </div>
       </div>
 
-      {result && (
-        <div className="grid gap-6 md:grid-cols-3 rise-in">
-          <div className="panel p-5 space-y-4 md:col-span-1 border-primary/20">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold flex items-center gap-2">
-                <ShieldCheck className="size-4 text-primary" /> Incident Triage Summary
-              </h3>
-              <span className="rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-semibold text-rose-600 border border-rose-200">
-                {result.severity}
-              </span>
-            </div>
+      {/* Input Section */}
+      <div className="flashcard p-5 border-purple-200 space-y-4">
+        <label className="text-xs font-extrabold text-foreground flex items-center gap-2">
+          <Sparkles className="size-4 text-purple-600" /> Enter Live Incident Telemetry or Citizen Report
+        </label>
+        
+        <div className="flex gap-2">
+          <textarea
+            value={inputReport}
+            onChange={(e) => setInputReport(e.target.value)}
+            placeholder="Type or paste a raw emergency report (e.g. Fire breaking out near Sector 4 warehouse with trapped staff...)"
+            className="flex-1 p-3.5 rounded-2xl border border-purple-200 dark:border-purple-800 bg-background text-xs font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500/50 min-h-[90px]"
+          />
+        </div>
 
-            <div className="space-y-3 text-xs">
-              <div className="rounded-lg bg-surface p-3 border border-border/50">
-                <span className="text-muted-foreground block text-[11px]">Type</span>
-                <span className="font-semibold text-sm text-foreground">{result.incident_type}</span>
-              </div>
-              <div className="rounded-lg bg-surface p-3 border border-border/50">
-                <span className="text-muted-foreground block text-[11px]">Location</span>
-                <span className="font-semibold text-sm text-foreground">{result.location}</span>
-              </div>
-              <div className="rounded-lg bg-primary/5 p-3 border border-primary/20">
-                <span className="text-primary font-semibold block text-[11px] mb-1">Coordinator Priority</span>
-                <p className="text-xs font-medium text-foreground leading-relaxed">{result.strategic_priority}</p>
-              </div>
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+          <div className="flex flex-wrap gap-2 text-xs">
+            <span className="text-xs text-muted-foreground font-bold flex items-center">Quick Scenarios:</span>
+            {sampleScenarios.map((sc, i) => (
+              <button
+                key={i}
+                onClick={() => handleAnalyze(sc)}
+                className="px-2.5 py-1 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 text-[11px] font-semibold text-purple-700 dark:text-purple-300 hover:bg-purple-100 transition-all text-left truncate max-w-[220px]"
+              >
+                {sc.split("!")[0]}...
+              </button>
+            ))}
+          </div>
+
+          <button
+            onClick={() => handleAnalyze()}
+            disabled={loading}
+            className="px-6 py-3 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-extrabold text-xs flex items-center gap-2 shadow-md active:scale-95 transition-all disabled:opacity-50"
+          >
+            {loading ? <Sparkles className="size-4 animate-spin" /> : <Send className="size-4" />}
+            {loading ? "Analyzing Telemetry..." : "Execute AI Triage"}
+          </button>
+        </div>
+      </div>
+
+      {/* Analysis Output Result */}
+      {result && (
+        <div className="flashcard p-6 border-purple-300 bg-card/90 space-y-6 rise-in">
+          <div className="flex flex-wrap items-center justify-between border-b border-purple-100 dark:border-purple-900 pb-4 gap-3">
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">
+                Multi-Agent Triage Verdict
+              </span>
+              <h3 className="text-base font-extrabold text-foreground mt-0.5">
+                {result.incident_type} — <span className="text-rose-600">{result.severity}</span>
+              </h3>
+            </div>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200">
+              <ShieldCheck className="size-4 text-emerald-600" /> Consensus Reached (96% Confidence)
+            </span>
+          </div>
+
+          {/* Key Intelligence Metrics */}
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div className="p-4 rounded-2xl bg-purple-50/40 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900 space-y-1">
+              <span className="text-[11px] font-bold text-muted-foreground block">Extracted Location</span>
+              <span className="text-xs font-extrabold text-foreground">{result.location}</span>
+            </div>
+            <div className="p-4 rounded-2xl bg-purple-50/40 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900 space-y-1">
+              <span className="text-[11px] font-bold text-muted-foreground block">Strategic Priority</span>
+              <span className="text-xs font-extrabold text-purple-700 dark:text-purple-300">{result.strategic_priority}</span>
+            </div>
+            <div className="p-4 rounded-2xl bg-purple-50/40 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900 space-y-1">
+              <span className="text-[11px] font-bold text-muted-foreground block">Historical Lesson Match</span>
+              <span className="text-[11px] font-semibold text-foreground/90 leading-tight block">
+                {result.historical_lessons || "Sector 4 Hydrant pressure check recommended."}
+              </span>
             </div>
           </div>
 
-          <div className="panel p-5 space-y-4 md:col-span-2">
-            <h3 className="text-sm font-bold flex items-center gap-2">
-              <Bot className="size-4 text-primary" /> Autonomous Departmental Directives
-            </h3>
-
+          {/* Departmental Response Directives */}
+          <div>
+            <h4 className="text-xs font-extrabold text-foreground mb-3 flex items-center gap-2">
+              <CheckCircle2 className="size-4 text-purple-600" /> Departmental Action Directives
+            </h4>
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-xl border border-fire/20 bg-fire/5 p-3.5 space-y-1.5">
                 <div className="flex items-center justify-between text-xs font-semibold text-fire">
-                  <span className="flex items-center gap-1.5"><Flame className="size-4" /> Fire & Rescue</span>
+                  <span className="flex items-center gap-1.5"><Flame className="size-4" /> Fire &amp; Rescue</span>
                   <span className="rounded bg-fire/10 px-2 py-0.5 text-[10px]">Active</span>
                 </div>
                 <p className="text-xs text-foreground/90">
-                  {result.department_responses?.Fire?.action_summary || "Deploying heavy foam tenders and ladder teams."}
+                  {result.department_responses?.["Fire"]?.action_summary || "Deploying heavy foam tenders and ladder teams."}
                 </p>
               </div>
 
@@ -164,7 +181,7 @@ export function AIAssistantView() {
                   <span className="rounded bg-medical/10 px-2 py-0.5 text-[10px]">Triage Ready</span>
                 </div>
                 <p className="text-xs text-foreground/90">
-                  {result.department_responses?.Medical?.action_summary || "4 ambulances routed; Metro General Trauma ward pre-notified."}
+                  {result.department_responses?.["Medical"]?.action_summary || "4 ambulances routed; Metro General Trauma ward pre-notified."}
                 </p>
               </div>
 
@@ -174,29 +191,10 @@ export function AIAssistantView() {
                   <span className="rounded bg-police/10 px-2 py-0.5 text-[10px]">Perimeter Set</span>
                 </div>
                 <p className="text-xs text-foreground/90">
-                  {result.department_responses?.Police?.action_summary || "Establishing 300m safety cordon and clearing rescue transit route."}
-                </p>
-              </div>
-
-              <div className="rounded-xl border border-traffic/20 bg-traffic/5 p-3.5 space-y-1.5">
-                <div className="flex items-center justify-between text-xs font-semibold text-amber-700">
-                  <span className="flex items-center gap-1.5"><Wrench className="size-4" /> Public Works / Hazmat</span>
-                  <span className="rounded bg-amber-500/10 px-2 py-0.5 text-[10px]">On Standby</span>
-                </div>
-                <p className="text-xs text-foreground/90">
-                  Utility lines isolation initiated; debris clearance machinery dispatched.
+                  {result.department_responses?.["Police"]?.action_summary || "Establishing 300m safety cordon and clearing rescue transit route."}
                 </p>
               </div>
             </div>
-
-            {result.historical_lessons && (
-              <div className="rounded-xl bg-slate-50 p-3.5 border border-slate-200 text-xs">
-                <span className="font-semibold text-slate-800 flex items-center gap-1.5 mb-1">
-                  <CheckCircle2 className="size-3.5 text-emerald-600" /> Historical Post-Mortem Lesson Applied:
-                </span>
-                <p className="text-slate-600 leading-relaxed italic">{result.historical_lessons}</p>
-              </div>
-            )}
           </div>
         </div>
       )}

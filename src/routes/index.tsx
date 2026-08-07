@@ -93,8 +93,8 @@ function Dashboard() {
     location: string;
     type: string;
     severity: number;
-    mediaUrl?: string;
-    mediaType?: "image" | "video";
+    mediaUrl?: string | undefined;
+    mediaType?: "image" | "video" | undefined;
   }) => {
     injectIncident(payload);
     const newMockTweetItem: TweetItem = {

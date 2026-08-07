@@ -13,17 +13,13 @@ import {
   Mountain,
   Zap,
   X,
-  RotateCcw,
   Sparkles,
-  MapPin,
   Upload,
   Send,
   Bot,
   ListFilter,
-  CheckCircle2,
   Image as ImageIcon,
   Video as VideoIcon,
-  Play,
   Trash2,
 } from "lucide-react";
 
@@ -92,9 +88,9 @@ const sampleMediaPresets = [
 ];
 
 const scenarioTemplates = [
-  { name: "Factory Fire", type: "Fire" as DisasterType, location: "Industrial Sector 4 Factory", severity: 9, tone: "Panic", mediaUrl: sampleMediaPresets[0].url },
-  { name: "Urban Flood", type: "Urban Flood" as DisasterType, location: "Market Road Suburb", severity: 7, tone: "Witness", mediaUrl: sampleMediaPresets[1].url },
-  { name: "Train Accident", type: "Train Derailment" as DisasterType, location: "Vijayawada Railway Station", severity: 10, tone: "News Reporter", mediaUrl: sampleMediaPresets[2].url },
+  { name: "Factory Fire", type: "Fire" as DisasterType, location: "Industrial Sector 4 Factory", severity: 9, tone: "Panic", mediaUrl: sampleMediaPresets[0]?.url },
+  { name: "Urban Flood", type: "Urban Flood" as DisasterType, location: "Market Road Suburb", severity: 7, tone: "Witness", mediaUrl: sampleMediaPresets[1]?.url },
+  { name: "Train Accident", type: "Train Derailment" as DisasterType, location: "Vijayawada Railway Station", severity: 10, tone: "News Reporter", mediaUrl: sampleMediaPresets[2]?.url },
   { name: "Building Collapse", type: "Building Collapse" as DisasterType, location: "Green Valley Apartment Complex", severity: 8, tone: "Witness" },
   { name: "Gas Leak", type: "Gas Leak" as DisasterType, location: "St. Jude Public School", severity: 8, tone: "Panic" },
   { name: "Airport Emergency", type: "Airport Emergency" as DisasterType, location: "Central Airport Terminal 2", severity: 9, tone: "Police" },
@@ -111,8 +107,8 @@ type ChatItem = {
     location: string;
     type: string;
     severity: number;
-    mediaUrl?: string;
-    mediaType?: "image" | "video";
+    mediaUrl?: string | undefined;
+    mediaType?: "image" | "video" | undefined;
   };
 };
 
@@ -124,7 +120,7 @@ export function MockTweetGeneratorSidebar({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  onInjectTweet: (tweet: { handle: string; text: string; location: string; type: string; severity: number; mediaUrl?: string; mediaType?: "image" | "video" }) => void;
+  onInjectTweet: (tweet: { handle: string; text: string; location: string; type: string; severity: number; mediaUrl?: string | undefined; mediaType?: "image" | "video" | undefined }) => void;
   onSwitchToLiveFeed: () => void;
 }) {
   const [activeTab, setActiveTab] = useState<"chatbot" | "wizard">("chatbot");
@@ -132,9 +128,9 @@ export function MockTweetGeneratorSidebar({
   const [severity, setSeverity] = useState(8);
   const [location, setLocation] = useState("Vijayawada Railway Station");
   const [tone, setTone] = useState("Panic");
-  const [uploadedMediaUrl, setUploadedMediaUrl] = useState<string | null>(sampleMediaPresets[0].url);
+  const [uploadedMediaUrl, setUploadedMediaUrl] = useState<string | null>(sampleMediaPresets[0]?.url || null);
   const [uploadedMediaType, setUploadedMediaType] = useState<"image" | "video">("image");
-  const [fakeNews, setFakeNews] = useState(false);
+  const [fakeNews] = useState(false);
 
   // Chatbot State
   const [chatInput, setChatInput] = useState("");
@@ -226,7 +222,7 @@ export function MockTweetGeneratorSidebar({
         location: "Vijayawada Junction",
         type: inferredType,
         severity: 9,
-        mediaUrl: uploadedMediaUrl || sampleMediaPresets[0].url,
+        mediaUrl: uploadedMediaUrl || sampleMediaPresets[0]?.url || undefined,
         mediaType: uploadedMediaType,
       };
 

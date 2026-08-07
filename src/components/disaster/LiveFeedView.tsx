@@ -13,9 +13,9 @@ export type TweetItem = {
   confidence: number;
   isDuplicate: boolean;
   status: "New" | "Analyzed" | "Dispatched" | "Ignored";
-  isMock?: boolean;
-  mediaUrl?: string;
-  mediaType?: "image" | "video";
+  isMock?: boolean | undefined;
+  mediaUrl?: string | undefined;
+  mediaType?: "image" | "video" | undefined;
 };
 
 const sampleTweets: TweetItem[] = [
@@ -95,7 +95,8 @@ const sampleTweets: TweetItem[] = [
 export function LiveFeedView({ injectedTweets = [] }: { injectedTweets?: TweetItem[] }) {
   const allTweets = [...injectedTweets, ...sampleTweets];
   const [tweets, setTweets] = useState<TweetItem[]>(allTweets);
-  const [selectedTweet, setSelectedTweet] = useState<TweetItem>(allTweets[0]);
+  const defaultSelected: TweetItem = allTweets[0] || sampleTweets[0]!;
+  const [selectedTweet, setSelectedTweet] = useState<TweetItem>(defaultSelected);
 
   const handleAction = (status: "Analyzed" | "Dispatched" | "Ignored") => {
     setTweets((prev) =>
