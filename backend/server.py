@@ -5,6 +5,7 @@ from typing import Any, List, Optional
 import uvicorn
 import os
 from agents import process_incident, load_historical_data
+from vision_agent import VisionAgent
 
 app = FastAPI(title="Mindweavers Disaster Response Multi-Agent API")
 
@@ -21,6 +22,11 @@ class TweetInput(BaseModel):
     id: str
     text: str
     timestamp: Optional[str] = "Just now"
+    vision_context: Optional[dict] = None
+
+class VisionInput(BaseModel):
+    tweet_id: str
+    media_url: str
 
 class SimulationResponse(BaseModel):
     incident_type: str
@@ -46,7 +52,23 @@ def process_incident_endpoint(tweet: TweetInput):
     and synthesizes coordinator strategic directives.
     """
     try:
-        result = process_incident(tweet.text)
+        # If vision context is provided, we append it to the text for the LLM / fallback
+        enhanced_text = tweet.text
+        if tweet.vision_context:
+            enhanced_text += f" | Vision AI Data: {tweet.vision_context}"
+            
+        result = process_incident(enhanced_text, tweet.vision_context)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/vision/analyze")
+def analyze_vision_endpoint(vision_req: VisionInput):
+    """
+    YOLO11 and GeoCLIP analysis of tweet image.
+    """
+    try:
+        result = VisionAgent.analyze_image(vision_req.tweet_id, vision_req.media_url)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

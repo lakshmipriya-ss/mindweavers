@@ -65,7 +65,7 @@ def _parse_json_from_response(content: str) -> dict:
     except Exception:
         return {}
 
-def rule_based_fallback(tweet_text: str) -> dict:
+def rule_based_fallback(tweet_text: str, vision_context: dict = None) -> dict:
     """Fallback rule-based intelligence when Ollama LLM is offline."""
     lower = tweet_text.lower()
     
@@ -73,6 +73,18 @@ def rule_based_fallback(tweet_text: str) -> dict:
     severity = "Severe"
     location = "Downtown Central District"
     priority = "Dispatch immediate fire, medical and police perimeter teams."
+    
+    if vision_context:
+        # Utilize vision context if LLM is offline
+        if isinstance(vision_context.get("location"), dict):
+            location = f"{vision_context['location'].get('city', '')}, {vision_context['location'].get('state', '')}"
+        
+        objects = [obj.get("label", "") for obj in vision_context.get("objects", [])]
+        if "building" in objects and "person" in objects:
+            severity = "Critical (People Trapped)"
+        
+        if vision_context.get("people_count", 0) > 3:
+            priority = f"Mass extraction required. Detectors found {vision_context['people_count']} people."
     
     if "flood" in lower or "water" in lower or "rain" in lower or "inundat" in lower:
         incident_type = "Flash Flood"
@@ -119,7 +131,7 @@ def rule_based_fallback(tweet_text: str) -> dict:
         "historical_lessons": load_historical_data(3)
     }
 
-def process_incident(tweet_text: str) -> dict:
+def process_incident(tweet_text: str, vision_context: dict = None) -> dict:
     """Processes raw report string with LLM (Ollama) or falls back to rule-based multi-agent simulator."""
     try:
         import ollama
@@ -138,4 +150,4 @@ def process_incident(tweet_text: str) -> dict:
     except Exception:
         pass
 
-    return rule_based_fallback(tweet_text)
+    return rule_based_fallback(tweet_text, vision_context)
